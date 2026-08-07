@@ -1,0 +1,10 @@
+{
+  "name": "kanka",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Kanka storefront — static frontend + Vercel serverless payment functions. No build step, no dependencies.",
+  "engines": {
+    "node": ">=18"
+  }
+}
