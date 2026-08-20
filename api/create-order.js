@@ -132,6 +132,9 @@ export default async function handler(req, res) {
       quantity:     l.quantity,
       unit_price:   fromPaise(l.unitPricePaise),
       line_total:   fromPaise(l.linePaise),
+      /* Legacy short-name column — NOT NULL on this table, same
+         old/new split as `total` on orders. */
+      total_price:  fromPaise(l.linePaise),
     })));
 
     /* 4. Only non-secret data crosses back. KEY_ID is publishable;
