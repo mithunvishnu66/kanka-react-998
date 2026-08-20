@@ -96,6 +96,11 @@ export default async function handler(req, res) {
     /* 3. Store the pending order. Rupees in our table, paise on Razorpay's side. */
     const [order] = await db.insert("orders", [{
       order_number:      orderNo,
+      /* Legacy short-name columns. This table predates the migration and
+         still carries NOT NULL constraints on `email` and `total`, so both
+         the old and the new names get written on every insert. */
+      email:             address.email,
+      total:             fromPaise(quote.totalPaise),
       customer_id:       customerId,
       status:            "pending",
       payment_status:    "pending",
