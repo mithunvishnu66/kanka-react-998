@@ -488,6 +488,10 @@ window.loadKankaData = async function loadKankaData() {
       description:   p.description || "",
       details:       p.details || [],
       images:        images.length ? images : ["https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&h=1000&auto=format&fit=crop&q=80"],
+      /* ProductCard reads the singular `image`. Without this the grid
+         thumbnails render broken while the detail page (which reads
+         images[0]) looks fine. */
+      image:         images[0] || "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&h=1000&auto=format&fit=crop&q=80",
       colors:        colors.length ? colors : [{ name:"Default", hex:"#cccccc" }],
       sizes:         sizes.length  ? sizes  : ["M"],
       stockMap,
@@ -2240,7 +2244,7 @@ function ProductInfo({ product, onAddedChange }) {
     <div style={{ flex:1, minWidth:0 }}>
       {/* Breadcrumb */}
       <p style={{ fontFamily:"Jost", fontSize:11, color:"#B8A99A", letterSpacing:"0.08em", marginBottom:14 }}>
-        Dresses / {product.category.charAt(0).toUpperCase()+product.category.slice(1)} / {product.name}
+        Products / {product.category.charAt(0).toUpperCase()+product.category.slice(1)} / {product.name}
       </p>
 
       {/* Name */}
@@ -2259,11 +2263,11 @@ function ProductInfo({ product, onAddedChange }) {
       {/* Price */}
       <div style={{ display:"flex", alignItems:"baseline", gap:12, marginBottom:20 }}>
         <span style={{ fontFamily:"Cormorant Garamond, serif", fontSize:30, fontWeight:500, color:"#1A1008" }}>₹{product.price.toLocaleString("en-IN")}</span>
-        {product.originalPrice && (
+        {product.originalPrice && savings > 0 && (
           <>
             <span style={{ fontFamily:"Jost", fontSize:15, color:"#B8A99A", textDecoration:"line-through" }}>₹{product.originalPrice.toLocaleString("en-IN")}</span>
             <span style={{ fontFamily:"Jost", fontSize:11, fontWeight:600, color:"#C5A468", background:"#FDF5E8", padding:"3px 10px", borderRadius:4 }}>
-              SAVE ${savings}
+              SAVE ₹{savings.toLocaleString("en-IN")}
             </span>
           </>
         )}
