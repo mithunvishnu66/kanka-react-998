@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kanka Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { font-family: 'Jost', sans-serif; color: #1A1008; background: #ECE5DB; -webkit-font-smoothing: antialiased; }
+  button { cursor: pointer; }
+  input { font-family: 'Jost', sans-serif; }
+  input::placeholder { color: #B3A492; }
+  ::-webkit-scrollbar { width: 7px; height: 7px; }
+  ::-webkit-scrollbar-thumb { background: #D8CDBD; border-radius: 8px; }
+  ::selection { background: #C5A468; color: #1A1008; }
+
+  @keyframes kkFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes kkSlide { from { transform: translateX(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes kkBackdrop { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes kkBar { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+  .fade { animation: kkFade 0.38s cubic-bezier(0.22,1,0.36,1) both; }
+  .slide { animation: kkSlide 0.34s cubic-bezier(0.22,1,0.36,1) both; }
+  .backdrop { animation: kkBackdrop 0.22s ease both; }
+
+  /* LOGIN */
+  #login { display: flex; min-height: 100vh; background: #1A1008; }
+  .login-brand { width: 46%; background: #1A1008; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; padding: 56px 52px; }
+  .login-brand::before { content: ''; position: absolute; inset: 0; background: radial-gradient(120% 90% at 0% 0%, rgba(197,164,104,0.14), transparent 55%); }
+  .login-form-wrap { flex: 1; display: flex; align-items: center; justify-content: center; background: #F7F3EE; padding: 28px; }
+  .login-form { width: 100%; max-width: 392px; }
+
+  /* APP */
+  #app { display: flex; min-height: 100vh; }
+  .sidebar { width: 236px; flex-shrink: 0; background: #1A1008; min-height: 100vh; padding: 30px 0 24px; position: sticky; top: 0; display: flex; flex-direction: column; transition: transform 0.32s cubic-bezier(0.22,1,0.36,1); }
+  .main { flex: 1; min-width: 0; padding: 28px 36px; display: flex; flex-direction: column; }
+
+  .nav-btn { display: flex; align-items: center; gap: 12px; width: calc(100% - 16px); margin: 1px 8px; background: transparent; border: none; font-family: 'Jost', sans-serif; font-size: 13.5px; font-weight: 400; color: rgba(250,249,247,0.6); padding: 11px 14px; border-radius: 9px; transition: color 0.15s, background 0.15s; text-align: left; }
+  .nav-btn:hover { color: #FAF9F7; }
+  .nav-btn.active { background: rgba(197,164,104,0.13); color: #FAF9F7; font-weight: 600; }
+  .nav-btn.active .nav-icon { color: #C5A468; }
+  .nav-icon { color: rgba(250,249,247,0.55); display: flex; align-items: center; flex-shrink: 0; }
+
+  .stat-card { background: #FBF8F3; border: 1px solid #EAE1D4; border-radius: 14px; padding: 22px 22px 20px; position: relative; overflow: hidden; }
+  .stat-bar { position: absolute; top: 0; left: 0; width: 100%; height: 3px; }
+
+  .filter-btn { background: #FBF8F3; color: #6B5744; border: 1px solid #E2D9CC; border-radius: 9px; padding: 8px 15px; font-family: 'Jost', sans-serif; font-size: 12.5px; font-weight: 500; }
+  .filter-btn.active { background: #1A1008; color: #FAF9F7; border-color: #1A1008; }
+  .filter-btn:hover:not(.active) { border-color: #C5A468; color: #1A1008; }
+
+  .table-wrap { background: #FBF8F3; border: 1px solid #EAE1D4; border-radius: 14px; overflow: hidden; }
+  .table-head { display: flex; align-items: center; gap: 16px; padding: 13px 22px; background: #F2EBE0; border-bottom: 1px solid #EAE1D4; }
+  .th { font-family: 'Jost', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; color: #9A8978; }
+  .table-row { display: flex; align-items: center; gap: 16px; padding: 16px 22px; border-bottom: 1px solid #EFE8DD; cursor: pointer; transition: background 0.12s; }
+  .table-row:last-child { border-bottom: none; }
+  .table-row:hover { background: #F4EEE4; }
+
+  .prod-card { background: #FBF8F3; border: 1px solid #EAE1D4; border-radius: 14px; overflow: hidden; transition: border-color 0.15s; }
+  .prod-card:hover { border-color: #D8CDBD; }
+
+  /* PANEL */
+  .panel-backdrop { position: fixed; inset: 0; background: rgba(26,16,8,0.42); z-index: 70; }
+  .panel { position: fixed; top: 0; right: 0; height: 100vh; width: 436px; background: #F7F3EE; z-index: 75; overflow-y: auto; box-shadow: -30px 0 80px rgba(26,16,8,0.18); }
+
+  /* MOBILE */
+  .hamb { display: none; width: 42px; height: 42px; align-items: center; justify-content: center; background: #FBF8F3; border: 1px solid #E2D9CC; border-radius: 10px; font-size: 17px; color: #1A1008; flex-shrink: 0; }
+  @media (max-width: 900px) {
+    .sidebar { position: fixed; z-index: 60; top: 0; left: 0; height: 100vh; transform: translateX(-100%); }
+    .sidebar.open { transform: none; box-shadow: 30px 0 80px rgba(0,0,0,0.4); }
+    .hamb { display: flex; }
+    .main { padding: 18px; }
+    .topsearch { display: none !important; }
+    .stat-grid { grid-template-columns: 1fr 1fr !important; }
+    .prod-grid { grid-template-columns: 1fr 1fr !important; }
+    .dash-cols { grid-template-columns: 1fr !important; }
+    .panel { width: 100% !important; }
+    .acct-pill { display: none !important; }
+    .login-brand { display: none; }
+    .hide-mobile { display: none !important; }
+  }
+  @media (max-width: 560px) {
+    .prod-grid { grid-template-columns: 1fr !important; }
+  }
+
+  /* UTILS */
+  .mono-num { font-family: 'Cormorant Garamond', serif; font-weight: 600; color: #1A1008; }
+  .badge { font-family: 'Jost', sans-serif; font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 11px; border-radius: 999px; display: inline-block; white-space: nowrap; }
+  .chart-bar { transform-origin: bottom; animation: kkBar 0.7s cubic-bezier(0.22,1,0.36,1) both; }
+
+  /* FORM FIELDS (product editor) */
+  .f-label { font-family:'Jost'; font-size:11px; font-weight:600; letter-spacing:0.1em; color:#6B5744; display:block; margin-bottom:7px; }
+  .f-input, .f-select, .f-textarea {
+    width:100%; font-family:'Jost'; font-size:14px; color:#1A1008; background:#FBF8F3;
+    border:1px solid #E2D9CC; border-radius:8px; padding:10px 12px; outline:none; transition:border-color .12s;
+  }
+  .f-input:focus, .f-select:focus, .f-textarea:focus { border-color:#C5A468; }
+  .f-textarea { resize:vertical; min-height:70px; line-height:1.5; }
+  .f-row { margin-bottom:18px; }
+  .f-hint { font-family:'Jost'; font-size:11px; color:#A89684; margin-top:6px; }
+  .f-err { font-family:'Jost'; font-size:12.5px; color:#B23A2A; margin-top:8px; }
+  .f-toggle { display:flex; align-items:center; gap:10px; cursor:pointer; }
+  .f-switch { width:38px; height:22px; border-radius:999px; background:#E2D9CC; position:relative; transition:background .15s; flex-shrink:0; }
+  .f-switch::after { content:''; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:#FBF8F3; transition:transform .15s; }
+  .f-switch.on { background:#1A1008; }
+  .f-switch.on::after { transform:translateX(16px); background:#C5A468; }
+  .chip-row { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { font-family:'Jost'; font-size:12px; font-weight:500; color:#6B5744; background:#FBF8F3; border:1px solid #E2D9CC; border-radius:999px; padding:7px 13px; cursor:pointer; user-select:none; }
+  .chip.on { background:#1A1008; color:#FAF9F7; border-color:#1A1008; }
+  .color-row, .img-row { display:flex; align-items:center; gap:10px; margin-bottom:9px; }
+  .icon-btn { width:32px; height:32px; flex-shrink:0; border-radius:7px; border:1px solid #E2D9CC; background:#FBF8F3; color:#8C7B6E; display:flex; align-items:center; justify-content:center; font-size:14px; }
+  .icon-btn:hover { border-color:#C5A468; color:#1A1008; }
+  .add-link { font-family:'Jost'; font-size:12.5px; font-weight:600; color:#8C7456; letter-spacing:0.04em; display:inline-flex; align-items:center; gap:6px; }
+  .img-thumb { width:56px; height:66px; border-radius:7px; object-fit:cover; background:#E2D9CC; flex-shrink:0; }
+  .variant-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(84px,1fr)); gap:9px; }
+  .variant-cell { background:#FBF8F3; border:1px solid #E2D9CC; border-radius:8px; padding:8px; }
+  .variant-cell label { font-family:'Jost'; font-size:9.5px; font-weight:600; color:#9A8978; display:block; margin-bottom:5px; letter-spacing:0.04em; }
+  .variant-cell input { width:100%; border:none; background:transparent; font-family:'Jost'; font-size:14px; color:#1A1008; outline:none; }
+  .spinner { width:14px; height:14px; border-radius:50%; border:2px solid rgba(255,255,255,0.35); border-top-color:#FAF9F7; display:inline-block; animation:kkSpin .7s linear infinite; }
+  @keyframes kkSpin { to { transform:rotate(360deg); } }
+  .save-bar { position:sticky; bottom:0; background:#F7F3EE; border-top:1px solid #EAE1D4; padding:16px 28px; display:flex; gap:10px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="login" style="display:none;">
+  <div class="login-brand">
+    <div style="position:relative;display:flex;align-items:center;gap:10px;">
+      <div style="width:9px;height:9px;background:#C5A468;border-radius:50%;"></div>
+      <span style="font-family:'Jost';font-size:11px;font-weight:600;letter-spacing:0.34em;color:#C5A468;">EST. 2021</span>
+    </div>
+    <div style="position:relative;">
+      <p style="font-family:'Jost';font-size:11px;font-weight:600;letter-spacing:0.4em;color:rgba(250,249,247,0.5);margin-bottom:18px;">THE ATELIER</p>
+      <h1 style="font-family:'Cormorant Garamond',serif;font-size:88px;line-height:0.9;font-weight:500;color:#FAF9F7;letter-spacing:0.01em;">Kanka</h1>
+      <div style="width:54px;height:2px;background:#C5A468;margin:26px 0 22px;"></div>
+      <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:23px;line-height:1.45;color:rgba(250,249,247,0.72);max-width:340px;">Quietly considered clothing, made in small runs and kept close.</p>
+    </div>
+    <p style="position:relative;font-family:'Jost';font-size:11px;letter-spacing:0.16em;color:rgba(250,249,247,0.34);">STUDIO OPERATIONS · ADMIN</p>
+  </div>
+  <div class="login-form-wrap">
+    <div class="login-form fade">
+      <p style="font-family:'Jost';font-size:11px;font-weight:600;letter-spacing:0.26em;color:#C5A468;margin-bottom:14px;">ADMIN ACCESS</p>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:500;color:#1A1008;line-height:1;margin-bottom:8px;">Welcome back.</h2>
+      <p style="font-family:'Jost';font-size:13.5px;color:#8C7B6E;margin-bottom:34px;">Sign in to manage orders, customers &amp; stock.</p>
+      <label style="font-family:'Jost';font-size:11px;font-weight:600;letter-spacing:0.13em;color:#6B5744;display:block;margin-bottom:8px;">EMAIL ADDRESS</label>
+      <input id="inp-email" type="email" placeholder="studio@kanka.co" style="width:100%;font-size:15px;color:#1A1008;border:none;border-bottom:1.5px solid #D8CDBD;background:transparent;padding:11px 2px;outline:none;margin-bottom:24px;" />
+      <label style="font-family:'Jost';font-size:11px;font-weight:600;letter-spacing:0.13em;color:#6B5744;display:block;margin-bottom:8px;">PASSWORD</label>
+      <input id="inp-pw" type="password" placeholder="••••••••••" style="width:100%;font-size:15px;color:#1A1008;border:none;border-bottom:1.5px solid #D8CDBD;background:transparent;padding:11px 2px;outline:none;margin-bottom:14px;" />
+      <p id="login-err" style="display:none;font-family:'Jost';font-size:12.5px;color:#B23A2A;margin-bottom:18px;"></p>
+      <button id="btn-login" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#1A1008;color:#FAF9F7;border:none;font-family:'Jost';font-size:12px;font-weight:600;letter-spacing:0.22em;padding:16px;border-radius:2px;"><span id="login-btn-label">ENTER STUDIO →</span></button>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:24px;">
+        <span style="font-family:'Jost';font-size:12px;color:#A89684;">Owner login only</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div id="app" style="display:none;">
+
+  <!-- NAV BACKDROP (mobile) -->
+  <div id="nav-backdrop" style="display:none;position:fixed;inset:0;background:rgba(26,16,8,0.4);z-index:55;" class="backdrop"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div style="padding:0 26px 26px;margin-bottom:14px;border-bottom:1px solid rgba(250,249,247,0.09);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <p style="font-family:'Cormorant Garamond',serif;font-size:27px;font-weight:500;color:#FAF9F7;line-height:1;">Kanka</p>
+        <span style="width:6px;height:6px;background:#C5A468;border-radius:50%;margin-top:4px;"></span>
+      </div>
+      <p style="font-family:'Jost';font-size:9.5px;font-weight:600;letter-spacing:0.26em;color:#C5A468;margin-top:5px;">STUDIO ADMIN</p>
+    </div>
+    <p style="font-family:'Jost';font-size:9px;font-weight:600;letter-spacing:0.2em;color:rgba(250,249,247,0.32);padding:0 26px;margin-bottom:8px;">MANAGE</p>
+    <nav id="nav-list"></nav>
+    <div style="margin-top:auto;padding-top:18px;border-top:1px solid rgba(250,249,247,0.09);margin:auto 14px 0;">
+      <button id="btn-logout" class="nav-btn" style="gap:11px;">
+        <span style="font-size:14px;">⏻</span> Sign out
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main" id="main">
+    <header style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:30px;">
+      <div style="display:flex;align-items:center;gap:14px;min-width:0;">
+        <button class="hamb" id="btn-hamb">☰</button>
+        <div style="min-width:0;">
+          <h1 id="page-title" style="font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:500;color:#1A1008;line-height:1;letter-spacing:0.01em;"></h1>
+          <p id="page-sub" style="font-family:'Jost';font-size:12.5px;color:#9A8978;margin-top:5px;"></p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;flex-shrink:0;">
+        <div class="topsearch" style="display:flex;align-items:center;gap:9px;background:#FBF8F3;border:1px solid #E2D9CC;border-radius:10px;padding:0 14px;height:44px;width:240px;">
+          <span style="font-size:16px;color:#B3A492;">⌕</span>
+          <input id="search-inp" placeholder="Search…" style="border:none;background:transparent;outline:none;font-size:13.5px;color:#1A1008;width:100%;" />
+        </div>
+        <div class="acct-pill" style="display:flex;align-items:center;gap:11px;">
+          <div style="width:42px;height:42px;border-radius:50%;background:#1A1008;color:#C5A468;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;">K</div>
+          <div>
+            <p style="font-family:'Jost';font-size:13px;font-weight:600;color:#1A1008;line-height:1.2;">Kanka Studio</p>
+            <p style="font-family:'Jost';font-size:11px;color:#9A8978;">Owner</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- SCREEN CONTAINERS -->
+    <div id="screen-dashboard" style="display:none;"></div>
+    <div id="screen-orders"    style="display:none;"></div>
+    <div id="screen-customers" style="display:none;"></div>
+    <div id="screen-products"  style="display:none;"></div>
+  </div>
+
+  <!-- ORDER DETAIL PANEL -->
+  <div id="panel-backdrop" class="panel-backdrop backdrop" style="display:none;"></div>
+  <div id="panel" class="panel slide" style="display:none;overflow-y:auto;"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  SUPABASE CONFIG + REST HELPERS
+// ══════════════════════════════════════════
+const SUPABASE_URL = "https://eyjpkpvhnepcwuttvynt.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5anBrcHZobmVwY3d1dHR2eW50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNjEzODMsImV4cCI6MjA5NjYzNzM4M30.dRWtS897sZYLyJH8hNYp4H97r1le4lHJ1AJRFV93tPI";
+const IMAGE_BUCKET = "product-images";
+const ADMIN_AUTH_KEY = "kanka_admin_session"; // deliberately separate from the storefront's "kanka_session"
+
+function _getAdminSession() {
+  try {
+    const s = JSON.parse(localStorage.getItem(ADMIN_AUTH_KEY) || "null");
+    if (!s?.access_token || !s?.user) return null;
+    const payload = JSON.parse(atob(s.access_token.split('.')[1]));
+    if (payload.exp && payload.exp * 1000 < Date.now()) { localStorage.removeItem(ADMIN_AUTH_KEY); return null; }
+    return s;
+  } catch { return null; }
+}
+function _saveAdminSession(s) {
+  if (s) localStorage.setItem(ADMIN_AUTH_KEY, JSON.stringify(s));
+  else localStorage.removeItem(ADMIN_AUTH_KEY);
+}
+
+const adminAuth = {
+  current: _getAdminSession(),
+
+  async login(email, password) {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error_description || data.msg || "Login failed.");
+
+    // Must actually be an admin — a valid customer login is not enough.
+    const profRes = await fetch(`${SUPABASE_URL}/rest/v1/customers?id=eq.${data.user.id}&select=is_admin,full_name`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${data.access_token}` },
+    });
+    const profRows = await profRes.json();
+    if (!profRes.ok || !profRows?.[0]?.is_admin) {
+      throw new Error("This account doesn't have studio access.");
+    }
+
+    const session = { access_token: data.access_token, refresh_token: data.refresh_token, user: data.user, full_name: profRows[0].full_name };
+    _saveAdminSession(session);
+    this.current = session;
+    return session;
+  },
+
+  async logout() {
+    const s = this.current;
+    if (s?.access_token) {
+      try { await fetch(`${SUPABASE_URL}/auth/v1/logout`, { method:"POST", headers:{ apikey:SUPABASE_KEY, Authorization:`Bearer ${s.access_token}` } }); } catch {}
+    }
+    _saveAdminSession(null);
+    this.current = null;
+  },
+};
+
+/* Thin PostgREST client, authenticated as the logged-in admin so RLS's
+   is_admin() check applies. Mirrors the pattern already used in kanka.js
+   server-side, just from the browser with the user's own token. */
+async function sbFetch(path, { method = "GET", body, prefer } = {}) {
+  const headers = {
+    apikey: SUPABASE_KEY,
+    Authorization: `Bearer ${adminAuth.current?.access_token || SUPABASE_KEY}`,
+    "Content-Type": "application/json",
+  };
+  if (prefer) headers.Prefer = prefer;
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { method, headers, body: body===undefined?undefined:JSON.stringify(body) });
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!res.ok) throw new Error(data?.message || `Request failed (${res.status})`);
+  return data;
+}
+
+async function uploadProductImage(file, slug) {
+  const clean = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+  const path = `${slug}/${Date.now()}-${Math.random().toString(36).slice(2,7)}-${clean}`;
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${IMAGE_BUCKET}/${path}`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${adminAuth.current.access_token}`,
+      "Content-Type": file.type || "application/octet-stream",
+    },
+    body: file,
+  });
+  if (!res.ok) throw new Error((await res.json())?.message || "Image upload failed.");
+  return { url: `${SUPABASE_URL}/storage/v1/object/public/${IMAGE_BUCKET}/${path}`, path };
+}
+
+async function deleteProductImageFile(path) {
+  if (!path) return;
+  try {
+    await fetch(`${SUPABASE_URL}/storage/v1/object/${IMAGE_BUCKET}/${path}`, {
+      method: "DELETE",
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${adminAuth.current.access_token}` },
+    });
+  } catch {}
+}
+
+function slugify(s) {
+  return String(s || "").toLowerCase().trim()
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
+}
+
+// ══════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════
+// PRODUCTS is loaded live from Supabase — see loadProducts(). Orders and
+// customers are still the design-mockup fixtures below (not wired yet).
+let PRODUCTS = [];
+let productsLoaded = false;
+let productsLoadError = null;
+
+async function loadProducts() {
+  productsLoadError = null;
+  try {
+    const query =
+        "select=id,slug,name,description,details,price,original_price,category,tags,is_active,"
+      + "product_images(id,url,sort_order),"
+      + "product_colors(id,name,hex,sort_order),"
+      + "product_variants(id,color,size,stock,sku)"
+      + "&order=created_at.desc";
+    const rows = await sbFetch(`products?${query}`);
+    PRODUCTS = rows.map(p => {
+      const images = (p.product_images||[]).slice().sort((a,b)=>a.sort_order-b.sort_order);
+      const colors = (p.product_colors||[]).slice().sort((a,b)=>a.sort_order-b.sort_order);
+      const variants = p.product_variants || [];
+      const sizes = [...new Set(variants.map(v=>v.size))];
+      const totalStock = variants.reduce((s,v)=>s+(Number(v.stock)||0), 0);
+      return {
+        id: p.id, slug: p.slug, name: p.name, description: p.description||"",
+        details: p.details||[], price: Number(p.price), originalPrice: p.original_price?Number(p.original_price):null,
+        category: p.category, tags: p.tags||[], isActive: p.is_active,
+        images, colors, sizes, variants, totalStock,
+      };
+    });
+    productsLoaded = true;
+  } catch (err) {
+    productsLoadError = err.message || "Couldn't load products.";
+    productsLoaded = true;
+  }
+}
+
+const CATEGORY_LABELS = { mini:"Mini", midi:"Midi", maxi:"Maxi" };
+const ALL_SIZES = ["XS","S","M","L","XL","XXL"];
+
+const ORDERS = [
+  { id:"o1", number:"KNK-2048", name:"Aisha Khan",     contact:"aisha.k@gmail.com",     date:"Jun 18, 2026", status:"pending",   shipping:8,  items:[["p1","Olive · M",128],["p2","Ivory · S",74]], addr1:"14 Carter Road, Bandra West", addr2:"Mumbai, MH 400050",       phone:"+91 98201 44872" },
+  { id:"o2", number:"KNK-2047", name:"Rhea Malhotra",  contact:"rhea.mal@outlook.com",  date:"Jun 17, 2026", status:"paid",      shipping:8,  items:[["p9","Black · M",148]],                        addr1:"7 Jor Bagh",                 addr2:"New Delhi, DL 110003",    phone:"+91 99100 23310" },
+  { id:"o3", number:"KNK-2046", name:"Sara Dsouza",    contact:"sara.dsz@gmail.com",    date:"Jun 16, 2026", status:"packed",    shipping:0,  items:[["p7","Moss · M",186],["p5","Sage · S",88]],   addr1:"22 Brigade Road",            addr2:"Bengaluru, KA 560001",    phone:"+91 98860 77124" },
+  { id:"o4", number:"KNK-2045", name:"Ananya Reddy",   contact:"+91 90030 11298",       date:"Jun 15, 2026", status:"shipped",   shipping:0,  items:[["p3","Indigo · L",96]],                        addr1:"5 Banjara Hills Rd No.12",   addr2:"Hyderabad, TS 500034",    phone:"+91 90030 11298" },
+  { id:"o5", number:"KNK-2044", name:"Kavya Iyer",     contact:"kavya.iyer@gmail.com",  date:"Jun 14, 2026", status:"delivered", shipping:8,  items:[["p6","Rust · M",104],["p2","Blush · M",74]],  addr1:"31 Besant Nagar 2nd Ave",    addr2:"Chennai, TN 600090",      phone:"+91 94440 56672" },
+  { id:"o6", number:"KNK-2043", name:"Nisha Verma",    contact:"nisha.v@gmail.com",     date:"Jun 13, 2026", status:"delivered", shipping:8,  items:[["p1","Sand · L",128]],                         addr1:"18 Civil Lines",             addr2:"Jaipur, RJ 302006",       phone:"+91 90010 88451" },
+  { id:"o7", number:"KNK-2042", name:"Meera Joshi",    contact:"meera.joshi@gmail.com", date:"Jun 12, 2026", status:"cancelled", shipping:0,  items:[["p9","Olive · S",148]],                        addr1:"9 Koregaon Park Ln 7",       addr2:"Pune, MH 411001",         phone:"+91 98220 33019" },
+  { id:"o8", number:"KNK-2041", name:"Tanvi Shah",     contact:"tanvi.shah@gmail.com",  date:"Jun 11, 2026", status:"delivered", shipping:8,  items:[["p3","Terracotta · M",96],["p5","Cream · M",88]], addr1:"44 CG Road",              addr2:"Ahmedabad, GJ 380009",    phone:"+91 99090 71265" },
+];
+
+const CUSTOMERS = [
+  { id:"c0", name:"Kanka Studio",  contact:"studio@kanka.co",       joined:"Jan 2021", isAdmin:true,  avatarBg:"#1A1008" },
+  { id:"c1", name:"Kavya Iyer",    contact:"kavya.iyer@gmail.com",  joined:"Mar 2024", isAdmin:false, avatarBg:"#8C7456" },
+  { id:"c2", name:"Sara Dsouza",   contact:"sara.dsz@gmail.com",    joined:"Aug 2024", isAdmin:false, avatarBg:"#6E7359" },
+  { id:"c3", name:"Aisha Khan",    contact:"aisha.k@gmail.com",     joined:"Nov 2024", isAdmin:false, avatarBg:"#9C6B4A" },
+  { id:"c4", name:"Tanvi Shah",    contact:"tanvi.shah@gmail.com",  joined:"Dec 2024", isAdmin:false, avatarBg:"#5E6E78" },
+  { id:"c5", name:"Rhea Malhotra", contact:"rhea.mal@outlook.com",  joined:"Feb 2025", isAdmin:false, avatarBg:"#A98B5E" },
+  { id:"c6", name:"Nisha Verma",   contact:"nisha.v@gmail.com",     joined:"Mar 2025", isAdmin:false, avatarBg:"#7E6E52" },
+  { id:"c7", name:"Ananya Reddy",  contact:"+91 90030 11298",       joined:"Apr 2025", isAdmin:false, avatarBg:"#8C9576" },
+  { id:"c8", name:"Meera Joshi",   contact:"meera.joshi@gmail.com", joined:"May 2025", isAdmin:false, avatarBg:"#B07A55" },
+];
+
+const STATUS_META = {
+  pending:   { label:"Pending",   color:"#9A7B2E", bg:"#F4ECD7" },
+  paid:      { label:"Paid",      color:"#3B6B2A", bg:"#E7EFDF" },
+  packed:    { label:"Packed",    color:"#2A5A7A", bg:"#E0ECF2" },
+  shipped:   { label:"Shipped",   color:"#5A4AAB", bg:"#E7E3F4" },
+  delivered: { label:"Delivered", color:"#2D5A1B", bg:"#E2EDDB" },
+  cancelled: { label:"Cancelled", color:"#B23A2A", bg:"#F6E4E0" },
+};
+const FLOW = ["pending","paid","packed","shipped","delivered"];
+
+const NAV_ICONS = {
+  dashboard:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="9" rx="1.2"/><rect x="14" y="3" width="7" height="5" rx="1.2"/><rect x="14" y="12" width="7" height="9" rx="1.2"/><rect x="3" y="16" width="7" height="5" rx="1.2"/></svg>`,
+  orders:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7l8-4 8 4v10l-8 4-8-4z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>`,
+  customers:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="8" r="3.4"/><path d="M3.5 20c0-3.3 2.5-5.5 5.5-5.5s5.5 2.2 5.5 5.5"/><path d="M16 5.2a3.4 3.4 0 0 1 0 6.4M17.5 14.6c2.3.5 4 2.6 4 5.4"/></svg>`,
+  products:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 4h8l1 4H7z"/><path d="M6 8h12v11a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1z"/><path d="M10 12a2 2 0 0 0 4 0"/></svg>`,
+};
+
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let state = {
+  screen: "login",
+  orderFilter: "all",
+  productCat: "All",
+  selectedOrder: null,
+  navOpen: false,
+  search: "",
+};
+
+// ══════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════
+const $  = (sel, ctx=document) => ctx.querySelector(sel);
+const $$ = (sel, ctx=document) => [...ctx.querySelectorAll(sel)];
+const money = n => "₹" + Number(n).toLocaleString("en-IN");
+const prod  = id => PRODUCTS.find(p => p.id === id);
+const orderTotal = o => o.items.reduce((s,it)=>s+it[2],0) + o.shipping;
+const el = (tag, attrs={}, ...children) => {
+  const node = document.createElement(tag);
+  Object.entries(attrs).forEach(([k,v]) => {
+    if (k === "style" && typeof v === "object") Object.assign(node.style, v);
+    else if (k === "html") node.innerHTML = v;
+    else if (k.startsWith("on")) node.addEventListener(k.slice(2).toLowerCase(), v);
+    else node.setAttribute(k, v);
+  });
+  children.forEach(c => {
+    if (c == null) return;
+    node.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+  });
+  return node;
+};
+const badge = (status) => {
+  const m = STATUS_META[status] || {color:"#8C7B6E",bg:"#EEE7DC"};
+  const s = el("span");
+  s.className = "badge";
+  s.textContent = m.label;
+  Object.assign(s.style, { color: m.color, background: m.bg });
+  return s;
+};
+
+// ══════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════
+function render() {
+  const { screen } = state;
+  $("#login").style.display   = screen === "login" ? "flex" : "none";
+  $("#app").style.display     = screen !== "login" ? "flex" : "none";
+  if (screen === "login") return;
+
+  // titles
+  const titles = {
+    dashboard: ["Good morning, Kanka", "Sunday, 22 June 2026 — here's the studio today."],
+    orders:    ["Orders", "Track fulfillment and update delivery status."],
+    customers: ["Customers", CUSTOMERS.length + " people have an account."],
+    products:  ["Products", PRODUCTS.length + " styles in the current collection."],
+  };
+  $("#page-title").textContent = (titles[screen]||["",""])[0];
+  $("#page-sub").textContent   = (titles[screen]||["",""])[1];
+  $("#search-inp").placeholder = screen === "orders" ? "Search orders…" : screen === "customers" ? "Search customers…" : screen === "products" ? "Search products…" : "Search…";
+
+  // sidebar nav
+  const pending = ORDERS.filter(o => o.status==="pending").length;
+  const navList = [
+    {id:"dashboard", label:"Dashboard"},
+    {id:"orders",    label:"Orders",    badge: pending||""},
+    {id:"customers", label:"Customers"},
+    {id:"products",  label:"Products"},
+  ];
+  const nav = $("#nav-list");
+  nav.innerHTML = "";
+  navList.forEach(item => {
+    const btn = el("button", { class:"nav-btn"+(screen===item.id?" active":""), onclick:()=>goTo(item.id) });
+    const icon = el("span", { class:"nav-icon", html:NAV_ICONS[item.id] });
+    const lbl  = el("span", { style:{flex:"1",textAlign:"left"} }, item.label);
+    btn.appendChild(icon); btn.appendChild(lbl);
+    if (item.badge) {
+      const b = el("span",{style:{fontFamily:"Jost",fontSize:"10px",fontWeight:"600",background:"#C5A468",color:"#1A1008",padding:"1px 7px",borderRadius:"999px"}}, String(item.badge));
+      btn.appendChild(b);
+    }
+    nav.appendChild(btn);
+  });
+
+  // screens
+  ["dashboard","orders","customers","products"].forEach(s => {
+    const el2 = $(`#screen-${s}`);
+    el2.style.display = screen===s ? "block" : "none";
+    el2.innerHTML = "";
+    if (screen===s) {
+      el2.classList.remove("fade");
+      void el2.offsetWidth;
+      el2.classList.add("fade");
+      renderScreen(s, el2);
+    }
+  });
+}
+
+function renderScreen(screen, wrap) {
+  const q = state.search.trim().toLowerCase();
+  if (screen==="dashboard") renderDash(wrap);
+  if (screen==="orders")    renderOrders(wrap, q);
+  if (screen==="customers") renderCustomers(wrap, q);
+  if (screen==="products")  renderProducts(wrap, q);
+}
+
+// ── DASHBOARD ──
+function renderDash(wrap) {
+  const allTotals = ORDERS.map(orderTotal);
+  const monthSales = allTotals.reduce((a,b)=>a+b,0);
+  const stats = [
+    {label:"TODAY'S SALES", value:money(376),   sub:"2 orders today",  delta:"+18%", dc:"#3B6B2A", bar:"#C5A468"},
+    {label:"MONTH REVENUE", value:money(monthSales), sub:"June so far", delta:"+12%",dc:"#3B6B2A", bar:"#6E7359"},
+    {label:"OPEN ORDERS",   value:String(ORDERS.filter(o=>["pending","paid","packed"].includes(o.status)).length), sub:"awaiting action", delta:"live", dc:"#9A7B2E", bar:"#9C6B4A"},
+    {label:"CUSTOMERS",     value:String(CUSTOMERS.length-1), sub:"registered", delta:"+3 new", dc:"#3B6B2A", bar:"#5E6E78"},
+  ];
+
+  // stat grid
+  const sg = el("div", {style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"16px",marginBottom:"22px"}});
+  sg.className = "stat-grid";
+  stats.forEach(s => {
+    const card = el("div"); card.className = "stat-card";
+    card.innerHTML = `
+      <div class="stat-bar" style="background:${s.bar};"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+        <p style="font-family:'Jost';font-size:10px;font-weight:600;letter-spacing:0.13em;color:#9A8978;">${s.label}</p>
+        <span style="font-family:'Jost';font-size:11px;font-weight:600;color:${s.dc};">${s.delta}</span>
+      </div>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:600;color:#1A1008;line-height:0.95;">${s.value}</p>
+      <p style="font-family:'Jost';font-size:11.5px;color:#9A8978;margin-top:6px;">${s.sub}</p>`;
+    sg.appendChild(card);
+  });
+  wrap.appendChild(sg);
+
+  // 2-col
+  const dc = el("div",{style:{display:"grid",gridTemplateColumns:"1.55fr 1fr",gap:"16px"}});
+  dc.className = "dash-cols";
+
+  // chart
+  const days=[["Wed",290],["Thu",170],["Fri",420],["Sat",640],["Sun",380],["Mon",210],["Tue",376]];
+  const maxV = Math.max(...days.map(d=>d[1]));
+  const weekTotal = money(days.reduce((a,d)=>a+d[1],0));
+  const chartCard = el("div",{style:{background:"#FBF8F3",border:"1px solid #EAE1D4",borderRadius:"14px",padding:"24px"}});
+  chartCard.innerHTML = `
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px;">
+      <div>
+        <p style="font-family:'Jost';font-size:10.5px;font-weight:600;letter-spacing:0.13em;color:#9A8978;margin-bottom:7px;">REVENUE · LAST 7 DAYS</p>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;color:#1A1008;line-height:1;">${weekTotal}</p>
+      </div>
+      <span style="font-family:'Jost';font-size:11px;font-weight:500;color:#3B6B2A;background:#E7EFDF;padding:5px 11px;border-radius:999px;">+12% vs last week</span>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:10px;height:160px;">
+      ${days.map((d,i) => `
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:9px;height:100%;justify-content:flex-end;">
+          <span style="font-family:'Jost';font-size:10px;color:#A89684;">$${d[1]}</span>
+          <div class="chart-bar" style="width:100%;max-width:34px;height:${Math.round((d[1]/maxV)*130)}px;background:${i===days.length-1?"#C5A468":"#D8CDBD"};border-radius:6px 6px 0 0;"></div>
+          <span style="font-family:'Jost';font-size:10.5px;font-weight:500;color:#9A8978;">${d[0]}</span>
+        </div>`).join("")}
+    </div>`;
+  dc.appendChild(chartCard);
+
+  // low stock
+  const low = PRODUCTS.filter(p=>p.stock<=5).sort((a,b)=>a.stock-b.stock).slice(0,5);
+  const lowCard = el("div",{style:{background:"#1A1008",borderRadius:"14px",padding:"24px",color:"#FAF9F7"}});
+  lowCard.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <p style="font-family:'Jost';font-size:10.5px;font-weight:600;letter-spacing:0.13em;color:#C5A468;">NEEDS RESTOCK</p>
+      <span style="font-family:'Jost';font-size:11px;color:rgba(250,249,247,0.5);">${low.length} items</span>
+    </div>
+    <div>${low.map(p => {
+      const sold=p.stock===0,draft=p.stock<0;
+      const sl=draft?"Draft":sold?"Sold out":p.stock+" left";
+      const sc=draft?"rgba(250,249,247,0.5)":sold?"#E8A0A0":"#C5A468";
+      return `<div style="display:flex;align-items:center;gap:13px;padding:11px 0;border-bottom:1px solid rgba(250,249,247,0.08);">
+        <div style="width:34px;height:34px;border-radius:8px;flex-shrink:0;background:${p.swatch};"></div>
+        <div style="flex:1;min-width:0;">
+          <p style="font-family:'Jost';font-size:13px;color:#FAF9F7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</p>
+          <p style="font-family:'Jost';font-size:11px;color:rgba(250,249,247,0.45);">${p.cat}</p>
+        </div>
+        <span style="font-family:'Jost';font-size:11px;font-weight:600;color:${sc};">${sl}</span>
+      </div>`;
+    }).join("")}</div>`;
+  dc.appendChild(lowCard);
+  wrap.appendChild(dc);
+
+  // recent orders
+  const ro = el("div",{style:{background:"#FBF8F3",border:"1px solid #EAE1D4",borderRadius:"14px",padding:"24px",marginTop:"16px"}});
+  const roHead = el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"6px"}});
+  roHead.innerHTML = `<p style="font-family:'Jost';font-size:10.5px;font-weight:600;letter-spacing:0.13em;color:#1A1008;">RECENT ORDERS</p>`;
+  const vaBtn = el("button",{style:{fontFamily:"Jost",fontSize:"12px",fontWeight:"500",color:"#C5A468",background:"none",border:"none"},onclick:()=>goTo("orders")}, "View all →");
+  roHead.appendChild(vaBtn);
+  ro.appendChild(roHead);
+  ORDERS.slice(0,5).forEach(o => {
+    const row = el("div");
+    row.className = "table-row";
+    row.style.paddingLeft = "6px"; row.style.paddingRight = "6px";
+    row.innerHTML = `
+      <span style="font-family:'Jost';font-size:13px;font-weight:600;color:#1A1008;width:96px;flex-shrink:0;">${o.number}</span>
+      <span style="font-family:'Jost';font-size:13px;color:#6B5744;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${o.name}</span>
+      <span class="hide-mobile" style="font-family:'Jost';font-size:12.5px;color:#9A8978;width:110px;flex-shrink:0;">${o.date}</span>`;
+    row.appendChild(badge(o.status));
+    row.innerHTML += `<span style="font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;color:#1A1008;width:78px;text-align:right;flex-shrink:0;">${money(orderTotal(o))}</span>`;
+    row.addEventListener("click", () => openOrder(o.id));
+    ro.appendChild(row);
+  });
+  wrap.appendChild(ro);
+}
+
+// ── ORDERS ──
+function renderOrders(wrap, q) {
+  const filterWrap = el("div",{style:{display:"flex",gap:"8px",marginBottom:"18px",flexWrap:"wrap"}});
+  ["all",...FLOW,"cancelled"].forEach(f => {
+    const cnt = f==="all" ? ORDERS.length : ORDERS.filter(o=>o.status===f).length;
+    const btn = el("button", {onclick:()=>{state.orderFilter=f; renderScreen("orders",wrap); wrap.innerHTML=""; renderScreen("orders",wrap);}});
+    btn.className = "filter-btn"+(state.orderFilter===f?" active":"");
+    btn.innerHTML = (f==="all"?"All":(STATUS_META[f]?.label||f)) + (f!=="all"?`<span style="opacity:0.55;margin-left:6px;">${cnt}</span>`:"");
+    filterWrap.appendChild(btn);
+  });
+  wrap.appendChild(filterWrap);
+
+  const tw = el("div"); tw.className = "table-wrap";
+  const th = el("div"); th.className = "table-head";
+  th.innerHTML = `
+    <span class="th" style="width:96px;flex-shrink:0;">ORDER</span>
+    <span class="th" style="flex:1;">CUSTOMER</span>
+    <span class="th hide-mobile" style="width:120px;flex-shrink:0;">DATE</span>
+    <span class="th hide-mobile" style="width:70px;flex-shrink:0;">ITEMS</span>
+    <span class="th" style="width:104px;flex-shrink:0;">STATUS</span>
+    <span class="th" style="width:78px;text-align:right;flex-shrink:0;">TOTAL</span>`;
+  tw.appendChild(th);
+
+  let list = ORDERS.filter(o => state.orderFilter==="all" || o.status===state.orderFilter);
+  if (q) list = list.filter(o => (o.number+" "+o.name+" "+o.contact).toLowerCase().includes(q));
+
+  if (!list.length) {
+    tw.innerHTML += `<div style="padding:60px 20px;text-align:center;"><p style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#1A1008;margin-bottom:6px;">Nothing here</p><p style="font-family:'Jost';font-size:13px;color:#9A8978;">No orders match this filter.</p></div>`;
+  } else {
+    list.forEach(o => {
+      const row = el("div"); row.className = "table-row";
+      row.innerHTML = `
+        <span style="font-family:'Jost';font-size:13px;font-weight:600;color:#1A1008;width:96px;flex-shrink:0;">${o.number}</span>
+        <div style="flex:1;min-width:0;">
+          <p style="font-family:'Jost';font-size:13.5px;font-weight:500;color:#1A1008;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${o.name}</p>
+          <p style="font-family:'Jost';font-size:11.5px;color:#A89684;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${o.contact}</p>
+        </div>
+        <span class="hide-mobile" style="font-family:'Jost';font-size:12.5px;color:#9A8978;width:120px;flex-shrink:0;">${o.date}</span>
+        <span class="hide-mobile" style="font-family:'Jost';font-size:12.5px;color:#9A8978;width:70px;flex-shrink:0;">${o.items.length} item${o.items.length!==1?"s":""}</span>`;
+      const badgeWrap = el("span",{style:{width:"104px",flexShrink:"0"}});
+      badgeWrap.appendChild(badge(o.status));
+      row.appendChild(badgeWrap);
+      row.innerHTML += `<span style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#1A1008;width:78px;text-align:right;flex-shrink:0;">${money(orderTotal(o))}</span>`;
+      row.addEventListener("click", () => openOrder(o.id));
+      tw.appendChild(row);
+    });
+  }
+  wrap.appendChild(tw);
+}
+
+// ── CUSTOMERS ──
+function renderCustomers(wrap, q) {
+  const ordersByEmail = {};
+  ORDERS.forEach(o => {
+    ordersByEmail[o.contact] = ordersByEmail[o.contact]||{n:0,sum:0};
+    ordersByEmail[o.contact].n++; ordersByEmail[o.contact].sum+=orderTotal(o);
+  });
+  let list = [...CUSTOMERS];
+  if (q) list = list.filter(c => (c.name+" "+c.contact).toLowerCase().includes(q));
+
+  const tw = el("div"); tw.className = "table-wrap";
+  const th = el("div"); th.className = "table-head";
+  th.innerHTML = `
+    <span class="th" style="flex:1;">CUSTOMER</span>
+    <span class="th hide-mobile" style="width:130px;flex-shrink:0;">JOINED</span>
+    <span class="th" style="width:90px;text-align:right;flex-shrink:0;">ORDERS</span>
+    <span class="th" style="width:110px;text-align:right;flex-shrink:0;">SPENT</span>`;
+  tw.appendChild(th);
+  list.forEach(c => {
+    const st = ordersByEmail[c.contact]||{n:0,sum:0};
+    const row = el("div"); row.className = "table-row";
+    row.innerHTML = `
+      <div style="display:flex;align-items:center;gap:13px;flex:1;min-width:0;">
+        <div style="width:42px;height:42px;border-radius:50%;flex-shrink:0;background:${c.avatarBg};color:#FAF9F7;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;">${c.name.charAt(0)}</div>
+        <div style="min-width:0;">
+          <p style="font-family:'Jost';font-size:14px;font-weight:600;color:#1A1008;display:flex;align-items:center;gap:7px;">${c.name}${c.isAdmin?`<span style="font-family:'Jost';font-size:9px;font-weight:600;letter-spacing:0.1em;color:#C5A468;border:1px solid #E3D2AE;padding:1px 6px;border-radius:999px;">OWNER</span>`:""}</p>
+          <p style="font-family:'Jost';font-size:12px;color:#A89684;">${c.contact}</p>
+        </div>
+      </div>
+      <span class="hide-mobile" style="font-family:'Jost';font-size:12.5px;color:#9A8978;width:130px;flex-shrink:0;">${c.joined}</span>
+      <span style="font-family:'Jost';font-size:13.5px;font-weight:500;color:#1A1008;width:90px;text-align:right;flex-shrink:0;">${st.n} order${st.n!==1?"s":""}</span>
+      <span style="font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;color:#1A1008;width:110px;text-align:right;flex-shrink:0;">${money(st.sum)}</span>`;
+    tw.appendChild(row);
+  });
+  wrap.appendChild(tw);
+}
+
+// ── PRODUCTS ──
+function renderProducts(wrap, q) {
+  const cats = ["All","mini","midi","maxi"];
+  const filterRow = el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",gap:"12px",marginBottom:"18px",flexWrap:"wrap"}});
+  const filterLeft = el("div",{style:{display:"flex",gap:"8px",flexWrap:"wrap"}});
+  cats.forEach(cat => {
+    const btn = el("button",{onclick:()=>{state.productCat=cat; wrap.innerHTML=""; renderScreen("products",wrap);}});
+    btn.className="filter-btn"+(state.productCat===cat?" active":"");
+    btn.textContent = cat==="All" ? "All" : CATEGORY_LABELS[cat];
+    filterLeft.appendChild(btn);
+  });
+  filterRow.appendChild(filterLeft);
+  const newBtn = el("button",{style:{display:"flex",alignItems:"center",gap:"8px",background:"#1A1008",color:"#FAF9F7",border:"none",fontFamily:"Jost",fontSize:"12px",fontWeight:"600",letterSpacing:"0.08em",padding:"11px 18px",borderRadius:"9px"}, onclick:()=>openProductEditor(null)},"＋ NEW PRODUCT");
+  filterRow.appendChild(newBtn);
+  wrap.appendChild(filterRow);
+
+  if (!productsLoaded) {
+    wrap.appendChild(el("p",{style:{fontFamily:"Jost",fontSize:"13.5px",color:"#9A8978",padding:"30px 4px"}},"Loading products…"));
+    return;
+  }
+  if (productsLoadError) {
+    wrap.appendChild(el("p",{style:{fontFamily:"Jost",fontSize:"13.5px",color:"#B23A2A",padding:"30px 4px"}},"Couldn't load products: "+productsLoadError));
+    return;
+  }
+
+  let list = PRODUCTS.filter(p => state.productCat==="All" || p.category===state.productCat);
+  if (q) list = list.filter(p => (p.name+" "+p.category).toLowerCase().includes(q));
+
+  if (!list.length) {
+    wrap.appendChild(el("p",{style:{fontFamily:"Jost",fontSize:"13.5px",color:"#9A8978",padding:"30px 4px"}},"No products here yet."));
+    return;
+  }
+
+  const grid = el("div"); grid.className = "prod-grid";
+  Object.assign(grid.style, {display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"16px"});
+  list.forEach(p => {
+    const draft = !p.isActive, sold = p.isActive && p.totalStock===0, low = p.isActive && p.totalStock>0 && p.totalStock<=5;
+    let bLabel="Active",bC="#3B6B2A",bBg="rgba(231,239,223,0.9)";
+    if(draft){bLabel="Draft";bC="#6B5744";bBg="rgba(247,243,238,0.92)";}
+    else if(sold){bLabel="Sold out";bC="#B23A2A";bBg="rgba(246,228,224,0.95)";}
+    else if(low){bLabel="Low stock";bC="#9A7B2E";bBg="rgba(244,236,215,0.95)";}
+    const img = p.images[0]?.url;
+    const thumbStyle = img ? `background-image:url('${img}');background-size:cover;background-position:center;` : `background:linear-gradient(150deg,#D8CDBD,#C2AE93);`;
+    const card = el("div",{onclick:()=>openProductEditor(p)}); card.className = "prod-card"; card.style.cursor="pointer";
+    card.innerHTML = `
+      <div style="height:168px;${thumbStyle}position:relative;display:flex;align-items:flex-end;justify-content:space-between;padding:14px;">
+        <span style="font-family:'Jost';font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;padding:4px 10px;border-radius:999px;color:${bC};background:${bBg};backdrop-filter:blur(4px);">${bLabel}</span>
+        <button class="del-prod-btn" style="width:28px;height:28px;border-radius:50%;border:none;background:rgba(26,16,8,0.55);color:#FAF9F7;font-size:13px;backdrop-filter:blur(4px);">✕</button>
+      </div>
+      <div style="padding:16px 16px 18px;">
+        <p style="font-family:'Jost';font-size:9.5px;font-weight:600;letter-spacing:0.13em;color:#A89684;margin-bottom:6px;">${(CATEGORY_LABELS[p.category]||p.category||"").toUpperCase()}</p>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:500;color:#1A1008;line-height:1.05;margin-bottom:12px;">${p.name}</p>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-family:'Jost';font-size:15px;font-weight:500;color:#1A1008;">${money(p.price)}</span>
+          <span style="font-family:'Jost';font-size:12px;color:${sold||draft?"#A89684":low?"#9A7B2E":"#6B5744"};">${draft?"Unpublished":sold?"0 in stock":p.totalStock+" in stock"}</span>
+        </div>
+      </div>`;
+    card.querySelector(".del-prod-btn").addEventListener("click", (e) => { e.stopPropagation(); deleteProduct(p); });
+    grid.appendChild(card);
+  });
+  wrap.appendChild(grid);
+}
+
+// ── DELETE PRODUCT ──
+async function deleteProduct(p) {
+  if (!confirm(`Delete "${p.name}"? This removes its images, colours and stock. This can't be undone.`)) return;
+  try {
+    for (const img of p.images) {
+      const path = img.url.split(`/public/${IMAGE_BUCKET}/`)[1];
+      if (path) await deleteProductImageFile(path);
+    }
+    await sbFetch(`products?id=eq.${p.id}`, { method:"DELETE" });
+    await loadProducts();
+    const scr = $("#screen-products"); scr.innerHTML=""; renderScreen("products", scr);
+    render();
+  } catch (err) {
+    alert("Couldn't delete product: " + err.message);
+  }
+}
+
+// ── PRODUCT EDITOR PANEL ──
+function openProductEditor(p) {
+  state.panelType = "product";
+  const draft = p ? {
+    id: p.id, isNew: false,
+    name: p.name, slug: p.slug, slugManuallyEdited: true,
+    category: p.category || "midi",
+    price: String(p.price ?? ""), originalPrice: p.originalPrice!=null?String(p.originalPrice):"",
+    description: p.description || "",
+    details: (p.details||[]).join("\n"),
+    tags: (p.tags||[]).join(", "),
+    isActive: p.isActive !== false,
+    colors: p.colors.length ? p.colors.map(c=>({_cid:c.id||("c"+Math.random()), name:c.name, hex:c.hex})) : [{_cid:"c0", name:"", hex:"#C5A468"}],
+    sizes: [...p.sizes],
+    images: p.images.map(i=>({id:i.id, url:i.url, path:i.url.split(`/public/${IMAGE_BUCKET}/`)[1]||null, isNew:false})),
+    stock: (() => {
+      // _cid mirrors the real product_colors.id for existing colours (see .map above),
+      // so keying stock by color.id here lines up with draft.colors[i]._cid.
+      const m = {};
+      p.variants.forEach(v => {
+        const c = p.colors.find(c=>c.name===v.color);
+        const cid = c ? c.id : v.color;
+        m[`${cid}|${v.size}`] = String(v.stock);
+      });
+      return m;
+    })(),
+    saving: false, error: null,
+  } : {
+    id: null, isNew: true,
+    name: "", slug: "", slugManuallyEdited: false,
+    category: "midi", price: "", originalPrice: "",
+    description: "", details: "", tags: "", isActive: true,
+    colors: [{_cid:"c0", name:"", hex:"#C5A468"}],
+    sizes: [], images: [], stock: {},
+    saving: false, error: null,
+  };
+  state.editingProduct = draft;
+
+  const panel = $("#panel");
+  const backdrop = $("#panel-backdrop");
+  panel.style.display = "block";
+  backdrop.style.display = "block";
+  panel.classList.remove("slide");
+  void panel.offsetWidth;
+  panel.classList.add("slide");
+  renderProductPanel();
+}
+
+function renderProductPanel() {
+  const panel = $("#panel");
+  const d = state.editingProduct;
+
+  panel.innerHTML = `
+    <div style="padding:26px 28px 22px;background:#1A1008;color:#FAF9F7;position:sticky;top:0;z-index:2;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <p style="font-family:'Jost';font-size:10px;font-weight:600;letter-spacing:0.16em;color:#C5A468;margin-bottom:8px;">${d.isNew?"NEW PRODUCT":"EDIT PRODUCT"}</p>
+          <h2 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:#FAF9F7;line-height:1.1;">${d.name || "Untitled style"}</h2>
+        </div>
+        <button id="close-panel" style="width:36px;height:36px;border-radius:50%;background:rgba(250,249,247,0.1);border:none;color:#FAF9F7;font-size:16px;cursor:pointer;flex-shrink:0;">✕</button>
+      </div>
+    </div>
+    <div style="padding:24px 28px 0;">
+
+      <div class="f-row">
+        <label class="f-label">IMAGES</label>
+        <div id="img-row" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;"></div>
+        <input type="file" id="img-file-input" accept="image/jpeg,image/png,image/webp,image/avif" multiple style="display:none;" />
+      </div>
+
+      <div class="f-row"><label class="f-label">NAME</label><input id="f-name" class="f-input" type="text" value="${escAttr(d.name)}" placeholder="e.g. Aanya Linen Wrap Dress" /></div>
+      <div class="f-row"><label class="f-label">SLUG</label><input id="f-slug" class="f-input" type="text" value="${escAttr(d.slug)}" placeholder="aanya-linen-wrap-dress" /><p class="f-hint">Used in the product's web address. Auto-fills from the name.</p></div>
+      <div class="f-row"><label class="f-label">CATEGORY</label>
+        <select id="f-category" class="f-select">
+          ${["mini","midi","maxi"].map(c=>`<option value="${c}" ${d.category===c?"selected":""}>${CATEGORY_LABELS[c]}</option>`).join("")}
+        </select>
+      </div>
+      <div style="display:flex;gap:14px;">
+        <div class="f-row" style="flex:1;"><label class="f-label">PRICE (₹)</label><input id="f-price" class="f-input" type="number" min="0" step="1" value="${escAttr(d.price)}" placeholder="4999" /></div>
+        <div class="f-row" style="flex:1;"><label class="f-label">ORIGINAL PRICE (₹)</label><input id="f-orig" class="f-input" type="number" min="0" step="1" value="${escAttr(d.originalPrice)}" placeholder="Optional — for a strike-through" /></div>
+      </div>
+      <div class="f-row"><label class="f-label">DESCRIPTION</label><textarea id="f-desc" class="f-textarea">${esc(d.description)}</textarea></div>
+      <div class="f-row"><label class="f-label">DETAILS</label><textarea id="f-details" class="f-textarea">${esc(d.details)}</textarea><p class="f-hint">One highlight per line — fabric, fit, care.</p></div>
+      <div class="f-row"><label class="f-label">TAGS</label><input id="f-tags" class="f-input" type="text" value="${escAttr(d.tags)}" placeholder="linen, wrap, everyday" /><p class="f-hint">Comma separated.</p></div>
+      <div class="f-row"><label class="f-label">STATUS</label>
+        <div class="f-toggle" id="f-active-toggle"><div class="f-switch ${d.isActive?"on":""}" id="f-active-switch"></div><span style="font-family:'Jost';font-size:13.5px;color:#1A1008;">${d.isActive?"Active — visible on the site":"Draft — hidden from customers"}</span></div>
+      </div>
+
+      <div class="f-row">
+        <label class="f-label">COLOURS</label>
+        <div id="colors-list"></div>
+        <button class="add-link" id="add-color-btn" type="button">+ Add colour</button>
+      </div>
+
+      <div class="f-row">
+        <label class="f-label">SIZES</label>
+        <div class="chip-row" id="sizes-chip-row"></div>
+      </div>
+
+      <div class="f-row">
+        <label class="f-label">STOCK</label>
+        <div class="variant-grid" id="variant-grid"></div>
+        ${(!d.colors.some(c=>c.name.trim()) || !d.sizes.length) ? '<p class="f-hint">Add a colour and at least one size to set stock.</p>' : ""}
+      </div>
+
+      ${d.error ? `<p class="f-err">${esc(d.error)}</p>` : ""}
+    </div>
+    <div class="save-bar">
+      ${!d.isNew ? `<button id="delete-product-btn" class="icon-btn" style="width:auto;padding:0 16px;color:#B23A2A;border-color:#E3C4BC;">Delete</button>` : ""}
+      <button id="cancel-product-btn" style="flex:1;background:#FBF8F3;border:1px solid #E2D9CC;border-radius:8px;padding:13px;font-family:'Jost';font-size:12.5px;font-weight:600;letter-spacing:0.08em;color:#6B5744;">CANCEL</button>
+      <button id="save-product-btn" style="flex:2;display:flex;align-items:center;justify-content:center;gap:8px;background:#1A1008;color:#FAF9F7;border:none;border-radius:8px;padding:13px;font-family:'Jost';font-size:12.5px;font-weight:600;letter-spacing:0.08em;">
+        <span id="save-product-label">${d.saving ? '<span class="spinner"></span>' : (d.isNew?"CREATE PRODUCT":"SAVE CHANGES")}</span>
+      </button>
+    </div>`;
+
+  // ── wire simple text/number/select fields (no re-render on input) ──
+  $("#f-name").addEventListener("input", e => {
+    d.name = e.target.value;
+    if (!d.slugManuallyEdited) { d.slug = slugify(d.name); $("#f-slug").value = d.slug; }
+  });
+  $("#f-slug").addEventListener("input", e => { d.slug = slugify(e.target.value); d.slugManuallyEdited = true; e.target.value = d.slug; });
+  $("#f-category").addEventListener("change", e => { d.category = e.target.value; });
+  $("#f-price").addEventListener("input", e => { d.price = e.target.value; });
+  $("#f-orig").addEventListener("input", e => { d.originalPrice = e.target.value; });
+  $("#f-desc").addEventListener("input", e => { d.description = e.target.value; });
+  $("#f-details").addEventListener("input", e => { d.details = e.target.value; });
+  $("#f-tags").addEventListener("input", e => { d.tags = e.target.value; });
+  $("#f-active-toggle").addEventListener("click", () => { d.isActive = !d.isActive; renderProductPanel(); });
+
+  $("#close-panel").addEventListener("click", closePanel);
+  $("#cancel-product-btn").addEventListener("click", closePanel);
+  if ($("#delete-product-btn")) $("#delete-product-btn").addEventListener("click", async () => {
+    closePanel();
+    const full = PRODUCTS.find(x=>x.id===d.id);
+    if (full) await deleteProduct(full);
+  });
+  $("#save-product-btn").addEventListener("click", saveProductDraft);
+
+  renderImageRow();
+  renderColorsList();
+  renderSizeChips();
+  renderVariantGrid();
+
+  $("#img-file-input").addEventListener("change", async (e) => {
+    const files = [...e.target.files];
+    e.target.value = "";
+    if (!files.length) return;
+    if (!d.slug) { d.error = "Give the product a name first, so images have somewhere to go."; renderProductPanel(); return; }
+    const rowEl = $("#img-row");
+    for (const file of files) {
+      const placeholder = el("div",{class:"img-thumb",style:{display:"flex",alignItems:"center",justifyContent:"center"}}, "…");
+      rowEl.insertBefore(placeholder, rowEl.lastElementChild);
+      try {
+        const { url, path } = await uploadProductImage(file, d.slug);
+        d.images.push({ url, path, isNew:true });
+      } catch (err) {
+        d.error = err.message;
+      }
+    }
+    renderProductPanel();
+  });
+}
+
+function renderImageRow() {
+  const d = state.editingProduct;
+  const row = $("#img-row");
+  row.innerHTML = "";
+  d.images.forEach((img, i) => {
+    const wrap = el("div",{style:{position:"relative"}});
+    wrap.innerHTML = `<img src="${img.url}" class="img-thumb" />
+      <button style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#1A1008;color:#FAF9F7;border:none;font-size:10px;">✕</button>`;
+    wrap.querySelector("button").addEventListener("click", async () => {
+      if (img.path) await deleteProductImageFile(img.path);
+      d.images.splice(i,1);
+      renderProductPanel();
+    });
+    row.appendChild(wrap);
+  });
+  const addTile = el("button",{class:"icon-btn",style:{width:"56px",height:"66px",fontSize:"20px"},onclick:()=>$("#img-file-input").click()},"＋");
+  row.appendChild(addTile);
+}
+
+function renderColorsList() {
+  const d = state.editingProduct;
+  const wrap = $("#colors-list");
+  wrap.innerHTML = "";
+  d.colors.forEach((c, i) => {
+    const row = el("div",{class:"color-row"});
+    row.innerHTML = `
+      <input type="color" value="${/^#[0-9a-fA-F]{6}$/.test(c.hex)?c.hex:"#C5A468"}" style="width:38px;height:38px;border:1px solid #E2D9CC;border-radius:8px;padding:2px;background:#FBF8F3;flex-shrink:0;" />
+      <input type="text" class="f-input" placeholder="Colour name (e.g. Olive)" value="${escAttr(c.name)}" />
+      <button class="icon-btn">✕</button>`;
+    const [colorInput, nameInput, delBtn] = row.querySelectorAll("input, button");
+    colorInput.addEventListener("input", e => { c.hex = e.target.value; });
+    nameInput.addEventListener("input", e => { c.name = e.target.value; });
+    delBtn.addEventListener("click", () => { d.colors.splice(i,1); if(!d.colors.length) d.colors.push({_cid:"c"+Math.random(),name:"",hex:"#C5A468"}); renderProductPanel(); });
+    wrap.appendChild(row);
+  });
+  $("#add-color-btn").onclick = () => { d.colors.push({_cid:"c"+Math.random()+Date.now(), name:"", hex:"#C5A468"}); renderProductPanel(); };
+}
+
+function renderSizeChips() {
+  const d = state.editingProduct;
+  const wrap = $("#sizes-chip-row");
+  wrap.innerHTML = "";
+  ALL_SIZES.forEach(sz => {
+    const on = d.sizes.includes(sz);
+    const chip = el("button",{class:"chip"+(on?" on":""), type:"button", onclick:()=>{
+      d.sizes = on ? d.sizes.filter(s=>s!==sz) : [...d.sizes, sz];
+      renderProductPanel();
+    }}, sz);
+    wrap.appendChild(chip);
+  });
+}
+
+function renderVariantGrid() {
+  const d = state.editingProduct;
+  const grid = $("#variant-grid");
+  grid.innerHTML = "";
+  const colors = d.colors.filter(c => c.name.trim());
+  if (!colors.length || !d.sizes.length) return;
+  colors.forEach(c => {
+    d.sizes.forEach(sz => {
+      const key = `${c._cid}|${sz}`;
+      const cell = el("div",{class:"variant-cell"});
+      cell.innerHTML = `<label>${esc(c.name)} · ${sz}</label><input type="number" min="0" step="1" value="${d.stock[key] ?? 0}" />`;
+      cell.querySelector("input").addEventListener("input", e => { d.stock[key] = e.target.value; });
+      grid.appendChild(cell);
+    });
+  });
+}
+
+function esc(s) { return String(s??"").replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+function escAttr(s) { return esc(s).replace(/"/g, "&quot;"); }
+
+async function saveProductDraft() {
+  const d = state.editingProduct;
+  d.error = null;
+
+  if (!d.name.trim())            { d.error = "Give the product a name."; renderProductPanel(); return; }
+  if (!d.slug.trim())            { d.error = "Give the product a slug."; renderProductPanel(); return; }
+  const priceNum = Number(d.price);
+  if (!Number.isFinite(priceNum) || priceNum <= 0) { d.error = "Enter a valid price."; renderProductPanel(); return; }
+  const colors = d.colors.filter(c => c.name.trim());
+  if (!colors.length)            { d.error = "Add at least one colour."; renderProductPanel(); return; }
+  if (!d.sizes.length)           { d.error = "Select at least one size."; renderProductPanel(); return; }
+
+  d.saving = true; renderProductPanel();
+
+  try {
+    const payload = {
+      name: d.name.trim(),
+      slug: d.slug.trim(),
+      category: d.category,
+      price: priceNum,
+      original_price: d.originalPrice ? Number(d.originalPrice) : null,
+      description: d.description.trim() || null,
+      details: d.details.split("\n").map(s=>s.trim()).filter(Boolean),
+      tags: d.tags.split(",").map(s=>s.trim()).filter(Boolean),
+      is_active: d.isActive,
+    };
+
+    let productId = d.id;
+    if (d.isNew) {
+      const [row] = await sbFetch("products", { method:"POST", body:[payload], prefer:"return=representation" });
+      productId = row.id;
+    } else {
+      await sbFetch(`products?id=eq.${productId}`, { method:"PATCH", body:payload, prefer:"return=minimal" });
+      // Replace child rows wholesale — simplest correct approach for a single-admin panel.
+      await sbFetch(`product_images?product_id=eq.${productId}`, { method:"DELETE" });
+      await sbFetch(`product_colors?product_id=eq.${productId}`, { method:"DELETE" });
+      await sbFetch(`product_variants?product_id=eq.${productId}`, { method:"DELETE" });
+    }
+
+    if (d.images.length) {
+      await sbFetch("product_images", { method:"POST", prefer:"return=minimal",
+        body: d.images.map((img,i) => ({ product_id: productId, url: img.url, sort_order: i })) });
+    }
+
+    const colorRows = await sbFetch("product_colors", { method:"POST", prefer:"return=representation",
+      body: colors.map((c,i) => ({ product_id: productId, name: c.name.trim(), hex: c.hex, sort_order: i })) });
+    const cidToRealId = {};
+    colors.forEach((c, i) => { cidToRealId[c._cid] = colorRows[i].id; });
+
+    const slugUpper = d.slug.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,16);
+    const variantRows = [];
+    colors.forEach(c => {
+      const colorCode = c.name.trim().slice(0,3).toUpperCase().replace(/[^A-Z]/g,"") || "COL";
+      d.sizes.forEach(sz => {
+        const stock = Math.max(0, parseInt(d.stock[`${c._cid}|${sz}`], 10) || 0);
+        variantRows.push({ product_id: productId, color: c.name.trim(), size: sz, stock, sku: `${slugUpper}-${colorCode}-${sz}` });
+      });
+    });
+    await sbFetch("product_variants", { method:"POST", prefer:"return=minimal", body: variantRows });
+
+    await loadProducts();
+    closePanel();
+    const scr = $("#screen-products"); scr.innerHTML=""; renderScreen("products", scr);
+    render();
+  } catch (err) {
+    d.saving = false;
+    d.error = err.message?.includes("duplicate key") ? "That slug is already in use — try a different one." : (err.message || "Couldn't save this product.");
+    renderProductPanel();
+  }
+}
+
+// ── ORDER PANEL ──
+function openOrder(id) {
+  state.selectedOrder = id;
+  const o = ORDERS.find(x=>x.id===id);
+  if (!o) return;
+  const panel = $("#panel");
+  const backdrop = $("#panel-backdrop");
+  panel.style.display = "block";
+  backdrop.style.display = "block";
+  panel.classList.remove("slide");
+  void panel.offsetWidth;
+  panel.classList.add("slide");
+  renderPanel(o);
+}
+
+function closeOrder() { closePanel(); }
+
+function closePanel() {
+  $("#panel").style.display = "none";
+  $("#panel-backdrop").style.display = "none";
+  state.selectedOrder = null;
+  state.editingProduct = null;
+  state.panelType = null;
+}
+
+function renderPanel(o) {
+  const panel = $("#panel");
+  const subtotal = o.items.reduce((s,it)=>s+it[2],0);
+  const cancelled = o.status==="cancelled";
+  const curIdx = FLOW.indexOf(o.status);
+
+  panel.innerHTML = `
+    <div style="padding:26px 28px 22px;background:#1A1008;color:#FAF9F7;position:sticky;top:0;z-index:2;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <p style="font-family:'Jost';font-size:10px;font-weight:600;letter-spacing:0.16em;color:#C5A468;margin-bottom:8px;">ORDER DETAIL</p>
+          <h2 style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;color:#FAF9F7;line-height:1;">${o.number}</h2>
+          <p style="font-family:'Jost';font-size:12.5px;color:rgba(250,249,247,0.6);margin-top:7px;">Placed ${o.date}</p>
+        </div>
+        <button id="close-panel" style="width:36px;height:36px;border-radius:50%;background:rgba(250,249,247,0.1);border:none;color:#FAF9F7;font-size:16px;cursor:pointer;">✕</button>
+      </div>
+    </div>
+    <div style="padding:24px 28px 40px;">
+      <p style="font-family:'Jost';font-size:10px;font-weight:600;letter-spacing:0.12em;color:#9A8978;margin-bottom:14px;">FULFILLMENT</p>
+      <div style="display:flex;align-items:flex-start;margin-bottom:26px;">
+        ${FLOW.map((s,i) => {
+          const done=!cancelled&&i<=curIdx, current=!cancelled&&i===curIdx;
+          return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;position:relative;">
+            <div style="position:absolute;top:9px;left:-50%;width:100%;height:2px;background:${!cancelled&&i<=curIdx&&i>0?"#1A1008":"#E2D9CC"};"></div>
+            <div style="width:20px;height:20px;border-radius:50%;z-index:1;background:${current?"#C5A468":done?"#1A1008":"#E2D9CC"};border:2px solid ${current?"#C5A468":done?"#1A1008":"#E2D9CC"};display:flex;align-items:center;justify-content:center;font-size:10px;color:#FAF9F7;">${done&&!current?"✓":""}</div>
+            <span style="font-family:'Jost';font-size:10px;font-weight:500;color:${done?"#1A1008":"#A89684"};margin-top:8px;text-align:center;">${STATUS_META[s].label}</span>
+          </div>`;
+        }).join("")}
+      </div>
+
+      <div style="background:#FBF8F3;border:1px solid #EAE1D4;border-radius:12px;padding:18px 20px;margin-bottom:16px;">
+        <p style="font-family:'Jost';font-size:10px;font-weight:600;letter-spacing:0.12em;color:#9A8978;margin-bottom:11px;">DELIVER TO</p>
+        <p style="font-family:'Jost';font-size:14px;font-weight:600;color:#1A1008;margin-bottom:5px;">${o.name}</p>
+        <p style="font-family:'Jost';font-size:13px;color:#6B5744;line-height:1.7;">${o.addr1}<br/>${o.addr2}<br/>${o.phone}</p>
+      </div>
+
+      <div style="background:#FBF8F3;border:1px solid #EAE1D4;border-radius:12px;padding:18px 20px;margin-bottom:16px;">
+        <p style="font-family:'Jost';font-size:10px;font-weight:600;letter-spacing:0.12em;color:#9A8978;margin-bottom:14px;">ITEMS</p>
+        ${o.items.map(it => {
+          const p = prod(it[0]);
+          return `<div style="display:flex;align-items:center;gap:13px;padding:8px 0;border-bottom:1px solid #EFE8DD;">
+            <div style="width:42px;height:50px;border-radius:6px;flex-shrink:0;background:${p?p.swatch:"#D8CDBD"};"></div>
+            <div style="flex:1;min-width:0;">
+              <p style="font-family:'Jost';font-size:13.5px;font-weight:500;color:#1A1008;">${p?p.name:"Item"}</p>
+              <p style="font-family:'Jost';font-size:12px;color:#A89684;">${it[1]}</p>
+            </div>
+            <span style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:#1A1008;">${money(it[2])}</span>
+          </div>`;
+        }).join("")}
+        <div style="display:flex;justify-content:space-between;padding-top:14px;"><span style="font-family:'Jost';font-size:13px;color:#6B5744;">Subtotal</span><span style="font-family:'Jost';font-size:13px;color:#1A1008;">${money(subtotal)}</span></div>
+        <div style="display:flex;justify-content:space-between;padding-top:8px;"><span style="font-family:'Jost';font-size:13px;color:#6B5744;">Shipping</span><span style="font-family:'Jost';font-size:13px;color:#1A1008;">${o.shipping===0?"Free":money(o.shipping)}</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-top:13px;margin-top:11px;border-top:1px solid #EAE1D4;">
+          <span style="font-family:'Jost';font-size:12px;font-weight:600;letter-spacing:0.1em;color:#1A1008;">TOTAL</span>
+          <span style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#1A1008;">${money(subtotal+o.shipping)}</span>
+        </div>
+      </div>
+
+      <p style="font-family:'Jost';font-size:10px;font-weight:600;letter-spacing:0.12em;color:#9A8978;margin-bottom:11px;">UPDATE STATUS</p>
+      <div id="status-actions" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+    </div>`;
+
+  document.getElementById("close-panel").addEventListener("click", closeOrder);
+
+  const actionsWrap = document.getElementById("status-actions");
+  [...FLOW,"cancelled"].forEach(s => {
+    const active = o.status === s;
+    const isCancel = s === "cancelled";
+    const btn = el("button", {
+      style: {
+        background: active ? (isCancel?"#B23A2A":"#1A1008") : "#FBF8F3",
+        color: active ? "#FAF9F7" : (isCancel?"#B23A2A":"#6B5744"),
+        border: isCancel ? "1px solid #E3C4BC" : "1px solid #E2D9CC",
+        borderRadius:"8px", padding:"8px 14px",
+        fontFamily:"Jost", fontSize:"12px", fontWeight:"500",
+        cursor:"pointer",
+      },
+      onclick: () => {
+        o.status = s;
+        renderPanel(o);
+        // refresh the active screen
+        const scr = $("#screen-"+state.screen);
+        scr.innerHTML=""; renderScreen(state.screen, scr);
+        // refresh nav badges
+        render();
+      }
+    }, isCancel ? "Cancel" : STATUS_META[s].label);
+    actionsWrap.appendChild(btn);
+  });
+}
+
+// ══════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════
+function goTo(screen) {
+  state.screen = screen;
+  state.search = "";
+  state.navOpen = false;
+  closeNav();
+  render();
+}
+
+function closeNav() {
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("nav-backdrop").style.display = "none";
+  state.navOpen = false;
+}
+
+// ══════════════════════════════════════════
+//  BOOT
+// ══════════════════════════════════════════
+async function attemptLogin() {
+  const email = document.getElementById("inp-email").value.trim();
+  const pw    = document.getElementById("inp-pw").value;
+  const errEl = document.getElementById("login-err");
+  const btn   = document.getElementById("btn-login");
+  const label = document.getElementById("login-btn-label");
+  errEl.style.display = "none";
+  if (!email || !pw) { errEl.textContent = "Enter your email and password."; errEl.style.display = "block"; return; }
+
+  btn.disabled = true;
+  label.innerHTML = '<span class="spinner"></span>';
+  try {
+    await adminAuth.login(email, pw);
+    await loadProducts();
+    goTo("dashboard");
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't sign in.";
+    errEl.style.display = "block";
+  } finally {
+    btn.disabled = false;
+    label.textContent = "ENTER STUDIO →";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  // Login
+  document.getElementById("btn-login").addEventListener("click", attemptLogin);
+  document.getElementById("inp-pw").addEventListener("keydown", e => { if(e.key==="Enter") attemptLogin(); });
+
+  // Logout
+  document.getElementById("btn-logout").addEventListener("click", async () => {
+    await adminAuth.logout();
+    PRODUCTS = []; productsLoaded = false;
+    goTo("login");
+  });
+
+  // Hamburger
+  document.getElementById("btn-hamb").addEventListener("click", () => {
+    state.navOpen = !state.navOpen;
+    document.getElementById("sidebar").classList.toggle("open", state.navOpen);
+    const bd = document.getElementById("nav-backdrop");
+    bd.style.display = state.navOpen ? "block" : "none";
+    if(state.navOpen){ bd.classList.remove("backdrop"); void bd.offsetWidth; bd.classList.add("backdrop"); }
+  });
+  document.getElementById("nav-backdrop").addEventListener("click", closeNav);
+
+  // Panel backdrop
+  document.getElementById("panel-backdrop").addEventListener("click", closeOrder);
+
+  // Search
+  document.getElementById("search-inp").addEventListener("input", e => {
+    state.search = e.target.value;
+    const scr = $("#screen-"+state.screen);
+    scr.innerHTML=""; renderScreen(state.screen, scr);
+  });
+
+  // Resume an existing admin session if we still have one, else show login
+  if (adminAuth.current) {
+    await loadProducts();
+    state.screen = productsLoadError ? "login" : "dashboard";
+    if (productsLoadError) { await adminAuth.logout(); }
+  } else {
+    state.screen = "login";
+  }
+  render();
+});
+</script>
+</body>
+</html>
