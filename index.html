@@ -398,13 +398,13 @@ window.SUPABASE_KEY = SUPABASE_KEY;
 window.COLLECTIONS = [
   { id:1, title:"Evening Elegance", subtitle:"Dressed for the night",
     image:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=1000&auto=format&fit=crop&q=80",
-    cta:"Shop Evening", filter:"maxi" },
+    cta:"Shop Evening", filter:"tshirt" },
   { id:2, title:"Daywear Edit", subtitle:"Effortless all day",
     image:"https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&h=1000&auto=format&fit=crop&q=80",
-    cta:"Shop Daywear", filter:"midi" },
+    cta:"Shop Daywear", filter:"veshti" },
   { id:3, title:"Resort Capsule", subtitle:"Sun, sea & style",
     image:"https://images.unsplash.com/photo-1483985988-d65a12952491?w=800&h=1000&auto=format&fit=crop&q=80",
-    cta:"Shop Resort", filter:"maxi" },
+    cta:"Shop Resort", filter:"pant" },
 ];
 
 /* ─── STATIC: TESTIMONIALS ──────────────────────────────────────────── */
@@ -498,10 +498,10 @@ window.loadKankaData = async function loadKankaData() {
   const counts = { all: window.PRODUCTS.length };
   window.PRODUCTS.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
   window.CATEGORIES = [
-    { id:"all",  label:"All Dresses", count: counts.all  || 0 },
-    { id:"mini", label:"Mini",        count: counts.mini || 0 },
-    { id:"midi", label:"Midi",        count: counts.midi || 0 },
-    { id:"maxi", label:"Maxi",        count: counts.maxi || 0 },
+    { id:"all",    label:"All Products", count: counts.all    || 0 },
+    { id:"tshirt", label:"T-Shirt",      count: counts.tshirt || 0 },
+    { id:"veshti", label:"Veshti",       count: counts.veshti || 0 },
+    { id:"pant",   label:"Pant",         count: counts.pant   || 0 },
   ];
 
   console.log(`[Kanka] ✓ Loaded ${window.PRODUCTS.length} products from Supabase`);
@@ -1411,7 +1411,7 @@ function Hero() {
       heading1: "Dressed",
       heading2: "for the night.",
       sub: "Opulent fabrics. Unforgettable moments.",
-      filter: "maxi",
+      filter: "tshirt",
     },
     {
       image: "DSC07624.jpg.jpeg",
@@ -1427,7 +1427,7 @@ function Hero() {
       heading1: "Sun,",
       heading2: "sea & style.",
       sub: "Light, luxurious pieces for warmer days.",
-      filter: "maxi",
+      filter: "veshti",
     },
   ];
 
