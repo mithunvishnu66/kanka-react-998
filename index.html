@@ -1091,12 +1091,13 @@ function Navbar({ transparent = false, noSearch = false }) {
   const iconColor = "#1A1008";
 
   return (
-    <header style={{ position: "relative", zIndex: 900 }}>
+    <header style={{ position: "relative", zIndex: 900, marginBottom: -18 }}>
       <nav style={{
         height: 61,
         background: "#FAF7EE",
-        borderBottom: "2px solid rgba(26,16,8,0.28)",
-        boxShadow: "inset 0 -3px 6px -3px rgba(26,16,8,0.25)",
+        borderRadius: "0 0 18px 18px",
+        borderBottom: "1px solid rgba(26,16,8,0.12)",
+        boxShadow: "0 8px 22px -12px rgba(10,6,2,0.55)",
         display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 40px", position: "relative"
       }}>
         {/* Left — logo */}
