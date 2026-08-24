@@ -354,12 +354,21 @@
   </style>
 </head>
 <body>
-  <div id="kanka-loader" style="position:fixed;inset:0;background:#FAF9F7;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:500;color:#1A1008;margin-bottom:8px;">Kanka</div>
-    <div style="font-family:'Jost',sans-serif;font-size:11px;letter-spacing:0.2em;color:#C5A468;margin-bottom:28px;">LOADING COLLECTION</div>
-    <div style="width:28px;height:28px;border:2px solid #E8E0D5;border-top-color:#1A1008;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:16px;"></div>
-    <div id="kanka-loader-status" style="font-family:'Jost',sans-serif;font-size:12px;color:#8C7B6E;">Starting…</div>
-    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+  <div id="kanka-loader" style="position:fixed;inset:0;background:#FAF9F7;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;transition:transform 0.75s cubic-bezier(0.76,0,0.24,1);">
+    <div style="display:flex;overflow:hidden;padding-bottom:4px;">
+      <span class="kanka-ltr" style="font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:500;color:#1A1008;display:inline-block;transform:translateY(110%);animation:kanka-rise 0.55s cubic-bezier(0.22,1,0.36,1) 0.08s forwards;">K</span>
+      <span class="kanka-ltr" style="font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:500;color:#1A1008;display:inline-block;transform:translateY(110%);animation:kanka-rise 0.55s cubic-bezier(0.22,1,0.36,1) 0.155s forwards;">a</span>
+      <span class="kanka-ltr" style="font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:500;color:#1A1008;display:inline-block;transform:translateY(110%);animation:kanka-rise 0.55s cubic-bezier(0.22,1,0.36,1) 0.23s forwards;">n</span>
+      <span class="kanka-ltr" style="font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:500;color:#1A1008;display:inline-block;transform:translateY(110%);animation:kanka-rise 0.55s cubic-bezier(0.22,1,0.36,1) 0.305s forwards;">k</span>
+      <span class="kanka-ltr" style="font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:500;color:#1A1008;display:inline-block;transform:translateY(110%);animation:kanka-rise 0.55s cubic-bezier(0.22,1,0.36,1) 0.38s forwards;">a</span>
+    </div>
+    <div style="height:1px;background:#C5A468;width:0;margin-top:10px;animation:kanka-rule 0.6s ease 0.52s forwards;"></div>
+    <div id="kanka-loader-status" style="font-family:'Jost',sans-serif;font-size:11px;letter-spacing:0.16em;color:#8C7B6E;margin-top:26px;opacity:0;animation:kanka-fade 0.5s ease 0.8s forwards;">Starting…</div>
+    <style>
+      @keyframes kanka-rise{to{transform:translateY(0)}}
+      @keyframes kanka-rule{to{width:150px}}
+      @keyframes kanka-fade{to{opacity:1}}
+    </style>
   </div>
   <div id="root"></div>
 
@@ -4400,7 +4409,6 @@ function mountKanka() {
   if (mounted) return;
   mounted = true;
   const loader = document.getElementById("kanka-loader");
-  if (loader) loader.remove();
   try {
     ReactDOM.createRoot(document.getElementById("root")).render(<App />);
   } catch (e) {
@@ -4409,6 +4417,14 @@ function mountKanka() {
       '<div style="padding:40px;text-align:center;font-family:Jost,sans-serif;color:#C0392B">' +
       'Something went wrong. Please refresh the page.<br><br>' +
       '<small>' + e.message + '</small></div>';
+  }
+  /* Hold until the letter stagger and rule finish, then lift the whole
+     panel upward to reveal the page. */
+  if (loader) {
+    setTimeout(() => {
+      loader.style.transform = "translateY(-100%)";
+      setTimeout(() => loader.remove(), 800);
+    }, 1400);
   }
 }
 
