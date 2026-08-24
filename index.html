@@ -1578,7 +1578,11 @@ function CollectionCard({ collection: c, onShop, delay }) {
 /* ─── Trending Now ──────────────────────────────────────────────── */
 function TrendingSection() {
   const { navigate } = useApp();
-  const trending = window.PRODUCTS.filter(p => p.tags.includes("new") || p.tags.includes("bestseller")).slice(0, 4);
+  /* Prefer tagged products, but never show an empty section — fall back
+     to the most recent products so the homepage populates itself as the
+     catalogue grows, with no tagging required. */
+  const tagged   = window.PRODUCTS.filter(p => p.tags.includes("new") || p.tags.includes("bestseller"));
+  const trending = (tagged.length ? tagged : window.PRODUCTS).slice(0, 4);
   return (
     <section className="section" style={{ background:"#F7F3EE" }}>
       <div className="container">
@@ -1602,7 +1606,8 @@ function TrendingSection() {
 /* ─── Best Sellers ──────────────────────────────────────────────── */
 function BestSellers() {
   const { navigate } = useApp();
-  const bs = window.PRODUCTS.filter(p => p.tags.includes("bestseller"));
+  const tagged = window.PRODUCTS.filter(p => p.tags.includes("bestseller"));
+  const bs     = tagged.length ? tagged : window.PRODUCTS;
   return (
     <section className="section" style={{ background:"#FAF9F7" }}>
       <div className="container">
