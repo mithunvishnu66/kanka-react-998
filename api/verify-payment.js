@@ -13,10 +13,19 @@ import {
   db, razorpay, requireEnv,
   json, methodGuard, fail, verifyCheckoutSignature,
   isValidRazorpayOrderId, isValidRazorpayPaymentId, eqFilter,
+  rateLimit, tooManyRequests,
 } from "./_lib/kanka.js";
 
 export default async function handler(req, res) {
   if (!methodGuard(req, res, "POST")) return;
+
+  /* Forging a signature is computationally infeasible, but there's no
+     reason to let anyone try at speed — and each failed attempt writes
+     a signature_failed flag to the order row. */
+  const limit = rateLimit(req, { key: "verify", max: 20, windowMs: 60_000 });
+  if (!limit.ok) {
+    return tooManyRequests(res, limit.retryAfter);
+  }
 
   try {
     requireEnv("RAZORPAY_KEY_SECRET", "SUPABASE_URL", "SUPABASE_SERVICE_KEY");
