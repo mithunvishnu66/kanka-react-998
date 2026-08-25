@@ -11,7 +11,7 @@
 import {
   db, razorpay, ENV, requireEnv,
   json, methodGuard, fail, orderNumber, idempotencyKey, fromPaise,
-  getAuthedUserId,
+  getAuthedUserId, rateLimit, tooManyRequests,
 } from "./_lib/kanka.js";
 import { buildQuote, QuoteError } from "./_lib/quote.js";
 
@@ -55,6 +55,15 @@ function sanitiseCustomer(c = {}) {
 export default async function handler(req, res) {
   if (!methodGuard(req, res, "POST")) return;
 
+  /* Every call here writes a pending order row and creates a real
+     Razorpay order, so unchecked it's a way to flood the database and
+     burn through Razorpay's API quota. A genuine shopper retries a
+     handful of times at most. */
+  const limit = rateLimit(req, { key: "order", max: 10, windowMs: 60_000 });
+  if (!limit.ok) {
+    return tooManyRequests(res, limit.retryAfter, "Too many checkout attempts. Please wait a minute.");
+  }
+
   try {
     requireEnv("RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET", "SUPABASE_URL", "SUPABASE_SERVICE_KEY");
 
@@ -96,11 +105,6 @@ export default async function handler(req, res) {
     /* 3. Store the pending order. Rupees in our table, paise on Razorpay's side. */
     const [order] = await db.insert("orders", [{
       order_number:      orderNo,
-      /* Legacy short-name columns. This table predates the migration and
-         still carries NOT NULL constraints on `email` and `total`, so both
-         the old and the new names get written on every insert. */
-      email:             address.email,
-      total:             fromPaise(quote.totalPaise),
       customer_id:       customerId,
       status:            "pending",
       payment_status:    "pending",
@@ -132,9 +136,6 @@ export default async function handler(req, res) {
       quantity:     l.quantity,
       unit_price:   fromPaise(l.unitPricePaise),
       line_total:   fromPaise(l.linePaise),
-      /* Legacy short-name column — NOT NULL on this table, same
-         old/new split as `total` on orders. */
-      total_price:  fromPaise(l.linePaise),
     })));
 
     /* 4. Only non-secret data crosses back. KEY_ID is publishable;
