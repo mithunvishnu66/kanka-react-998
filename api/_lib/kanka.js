@@ -188,6 +188,50 @@ export function eqFilter(column, value) {
   return `${column}=eq.${encodeURIComponent(value)}`;
 }
 
+/* ─── Rate limiting ───────────────────────────────────────── */
+/* In-memory, per-instance. Vercel routes bursts to warm instances, so
+   this catches the fast brute-force case it's meant for — someone
+   hammering promo codes or spamming order creation. A slow attack
+   spread across cold starts can evade it; if that ever matters, swap
+   the Map for a Supabase table keyed the same way. */
+const _hits = new Map();
+
+export function rateLimit(req, { key, max, windowMs }) {
+  /* x-real-ip is set by Vercel and is harder to spoof than the
+     x-forwarded-for chain, whose first entry is caller-supplied. */
+  const ip =
+    req.headers?.["x-real-ip"] ||
+    String(req.headers?.["x-forwarded-for"] || "").split(",")[0].trim() ||
+    "unknown";
+
+  const bucket = `${key}:${ip}`;
+  const now    = Date.now();
+  const entry  = _hits.get(bucket);
+
+  if (!entry || now > entry.resetAt) {
+    _hits.set(bucket, { count: 1, resetAt: now + windowMs });
+    /* Opportunistic sweep so the Map can't grow without bound. */
+    if (_hits.size > 5000) {
+      for (const [k, v] of _hits) if (now > v.resetAt) _hits.delete(k);
+    }
+    return { ok: true, retryAfter: 0 };
+  }
+
+  entry.count += 1;
+  if (entry.count > max) {
+    return { ok: false, retryAfter: Math.ceil((entry.resetAt - now) / 1000) };
+  }
+  return { ok: true, retryAfter: 0 };
+}
+
+/* Standard 429 with a Retry-After header. */
+export function tooManyRequests(res, retryAfter, message) {
+  res.setHeader("Retry-After", String(retryAfter));
+  return json(res, 429, {
+    error: message || "Too many requests. Please wait a moment and try again.",
+  });
+}
+
 /* ─── Misc ────────────────────────────────────────────────── */
 export function orderNumber() {
   const rand = crypto.randomBytes(4).toString("hex").toUpperCase().slice(0, 6);
