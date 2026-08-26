@@ -23,6 +23,10 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    /* Sideways-scroll guard. `clip` rather than `hidden` because hidden
+       turns the element into a scroll container, which breaks the
+       position:sticky navbar and filter rail. */
+    html, body { max-width: 100%; overflow-x: clip; }
     body { background: #FAF9F7; color: #1A1008; font-family: 'Jost', sans-serif; overflow-x: hidden; }
     button { cursor: pointer; }
     img { display: block; max-width: 100%; }
@@ -318,9 +322,19 @@
 
     /* ─── Sticky mobile Add-to-Bag bar ─── */
     @media (max-width: 768px) {
-      .mobile-sticky-bar { display: flex !important; }
-      /* Push detail content above sticky bar + bottom nav */
-      .detail-mobile-padding { padding-bottom: 180px !important; }
+      .mobile-sticky-bar {
+        display: flex !important;
+        transition: transform 0.28s ease, opacity 0.28s ease;
+      }
+      /* Slides away once the footer is on screen — the bar belongs with
+         the product, not sitting over the footer links. */
+      .mobile-sticky-bar.bar-hidden {
+        transform: translateY(140%);
+        opacity: 0;
+        pointer-events: none;
+      }
+      /* Clear the bottom nav only — the sticky buy bar is gone. */
+      .detail-mobile-padding { padding-bottom: 80px !important; }
     }
 
     /* ─── Lazy image fade-in ─── */
@@ -1091,13 +1105,12 @@ function Navbar({ transparent = false, noSearch = false }) {
   const iconColor = "#1A1008";
 
   return (
-    <header style={{ position: "relative", zIndex: 900, marginBottom: -18 }}>
+    <header style={{ position: "relative", zIndex: 900 }}>
       <nav style={{
         height: 61,
         background: "#FAF7EE",
-        borderRadius: "0 0 18px 18px",
-        borderBottom: "1px solid rgba(26,16,8,0.12)",
-        boxShadow: "0 8px 22px -12px rgba(10,6,2,0.55)",
+        borderBottom: "2px solid rgba(26,16,8,0.28)",
+        boxShadow: "inset 0 -3px 6px -3px rgba(26,16,8,0.25)",
         display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 40px", position: "relative"
       }}>
         {/* Left — logo */}
@@ -1250,7 +1263,7 @@ function Footer() {
   const [signed, setSigned] = useState(false);
 
   const cols = [
-  { title: "SHOP", links: ["New Arrivals", "Mini Dresses", "Midi Dresses", "Maxi Dresses", "Sale"] },
+  { title: "SHOP", links: ["New Arrivals", "T-Shirts", "Veshti", "Pants", "Sale"] },
   { title: "HELP", links: ["Size Guide", "Shipping", "Returns", "Care Guide", "FAQ"] },
   { title: "COMPANY", links: ["About", "Sustainability", "Careers", "Press", "Contact"] }];
 
@@ -2340,8 +2353,10 @@ function ProductInfo({ product, onAddedChange }) {
         </div>
       </div>
 
-      {/* Quantity + Add to bag — DESKTOP (hidden on mobile, mobile uses sticky bar) */}
-      <div className="hide-mobile" style={{ display:"flex", gap:12, marginBottom:14, flexWrap:"wrap" }}>
+      {/* Quantity + Add to bag — shown on every size. The buttons belong
+          directly under the size picker; a shopper who has just chosen a
+          size should not have to hunt for how to buy. */}
+      <div style={{ display:"flex", gap:12, marginBottom:14, flexWrap:"wrap" }}>
         <div style={{ display:"flex", alignItems:"center", border:"1.5px solid #E8E0D5", borderRadius:8, overflow:"hidden" }}>
           <button onClick={() => setQty(q => Math.max(1,q-1))} style={{
             width:44, height:52, background:"none", border:"none",
@@ -2375,8 +2390,8 @@ function ProductInfo({ product, onAddedChange }) {
         </button>
       </div>
 
-      {/* Buy now — desktop */}
-      <button className="hide-mobile" onClick={handleBuyNow} style={{
+      {/* Buy now */}
+      <button onClick={handleBuyNow} style={{
         width:"100%", height:50,
         background:"transparent", border:"1.5px solid #1A1008",
         color:"#1A1008", fontFamily:"Jost", fontSize:12, fontWeight:600,
@@ -2416,30 +2431,36 @@ function ProductInfo({ product, onAddedChange }) {
         </p>
       </Accordion>
 
-      {/* Sticky mobile Add to Bag — floats above bottom nav */}
-      <StickyMobileBar
-        product={product}
-        selSize={selSize}
-        selColor={selColor}
-        qty={qty}
-        setQty={setQty}
-        added={added}
-        sizeErr={sizeErr}
-        wished={wished}
-        setWished={setWished}
-        onAdd={handleAdd}
-        onBuyNow={handleBuyNow}
-        setSizeErr={setSizeErr}
-        setSelSize={setSelSize}
-      />
+      {/* The sticky mobile bar used to live here. It's gone: the real
+          Add to Bag / Buy Now buttons now show on mobile directly under
+          the size picker, and two sets of buy buttons is worse than one
+          in the right place. */}
     </div>
   );
 }
 
 /* ─── Sticky Mobile Add-to-Bag Bar ──────────────────────────────── */
 function StickyMobileBar({ product, selSize, selColor, qty, setQty, added, sizeErr, wished, setWished, onAdd, onBuyNow, setSizeErr, setSelSize }) {
+  const barRef = useRef(null);
+
+  /* Once the footer appears, slide the bar out of the way. Leaving it
+     pinned over the footer makes the price look like it belongs to the
+     footer rather than the product. */
+  useEffect(() => {
+    const footer = document.querySelector("footer");
+    const bar    = barRef.current;
+    if (!footer || !bar || !("IntersectionObserver" in window)) return;
+
+    const io = new IntersectionObserver(
+      ([entry]) => bar.classList.toggle("bar-hidden", entry.isIntersecting),
+      { rootMargin: "0px 0px -40px 0px" }
+    );
+    io.observe(footer);
+    return () => io.disconnect();
+  }, []);
+
   return (
-    <div style={{
+    <div ref={barRef} style={{
       position:"fixed", bottom:64, left:0, right:0,
       background:"#FAF9F7",
       borderTop:"1px solid #EDE8E0",
@@ -2453,11 +2474,11 @@ function StickyMobileBar({ product, selSize, selColor, qty, setQty, added, sizeE
       {/* Price */}
       <div style={{ display:"flex", flexDirection:"column", justifyContent:"center", minWidth:60 }}>
         <span style={{ fontFamily:"Cormorant Garamond, serif", fontSize:20, fontWeight:500, color:"#1A1008", lineHeight:1 }}>
-          ${product.price}
+          ₹{product.price.toLocaleString("en-IN")}
         </span>
-        {product.originalPrice && (
+        {product.originalPrice && product.originalPrice > product.price && (
           <span style={{ fontFamily:"Jost", fontSize:11, color:"#B8A99A", textDecoration:"line-through" }}>
-            ${product.originalPrice}
+            ₹{product.originalPrice.toLocaleString("en-IN")}
           </span>
         )}
       </div>
