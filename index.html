@@ -1112,13 +1112,15 @@ function Navbar({ transparent = false, noSearch = false }) {
   const iconColor = "#1A1008";
 
   return (
-    <header style={{ position: "relative", zIndex: 900 }}>
+    <header style={{ position: "relative", zIndex: 900, marginBottom: -93 }}>
       <nav style={{
         height: 61,
+        margin: 16,
         background: "#FAF7EE",
-        borderBottom: "2px solid rgba(26,16,8,0.28)",
-        boxShadow: "inset 0 -3px 6px -3px rgba(26,16,8,0.25)",
-        display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 40px", position: "relative"
+        borderRadius: 10,
+        border: "1px solid rgba(26,16,8,0.10)",
+        boxShadow: "0 10px 30px -12px rgba(10,6,2,0.6)",
+        display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 28px", position: "relative"
       }}>
         {/* Left — logo */}
         <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
