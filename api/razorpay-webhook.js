@@ -52,6 +52,10 @@ export default async function handler(req, res) {
 
     const event   = JSON.parse(rawBody);
     const type    = event.event;
+    /* Razorpay stamps each delivery with a unique id in this header.
+       It's the key we dedupe on so every event type — not just the
+       ones fulfill_order() guards — is processed at most once. */
+    const eventId = req.headers["x-razorpay-event-id"] || null;
     const payment = event?.payload?.payment?.entity;
     const rzpOrder = event?.payload?.order?.entity;
 
@@ -75,6 +79,19 @@ export default async function handler(req, res) {
       /* 200 so Razorpay stops retrying — nothing here to fix. */
       console.warn("[kanka] webhook for unknown order", razorpayOrderId);
       return json(res, 200, { ok: true, ignored: "unknown order" });
+    }
+
+    /* Event-level idempotency. The first delivery of a given event id
+       wins; any retry or replay returns here and does nothing — which
+       matters for refund.processed and payment.failed, whose handlers
+       write directly rather than going through fulfill_order()'s own
+       paid-check. */
+    const fresh = await db.rpc("claim_webhook_event", {
+      p_event_id:   eventId,
+      p_event_type: type,
+    });
+    if (fresh === false) {
+      return json(res, 200, { ok: true, already_processed: true });
     }
 
     switch (type) {
