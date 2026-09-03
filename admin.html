@@ -383,6 +383,8 @@ function slugify(s) {
 let PRODUCTS = [];
 let productsLoaded = false;
 let productsLoadError = null;
+let ordersLoaded = false;
+let ordersLoadError = null;
 
 async function loadProducts() {
   productsLoadError = null;
@@ -435,28 +437,78 @@ const ICON_CHEVRON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none
 const ICON_TICK = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>`;
 const ALL_SIZES = ["XS","S","M","L","XL","XXL"];
 
-const ORDERS = [
-  { id:"o1", number:"KNK-2048", name:"Aisha Khan",     contact:"aisha.k@gmail.com",     date:"Jun 18, 2026", status:"pending",   shipping:8,  items:[["p1","Olive · M",128],["p2","Ivory · S",74]], addr1:"14 Carter Road, Bandra West", addr2:"Mumbai, MH 400050",       phone:"+91 98201 44872" },
-  { id:"o2", number:"KNK-2047", name:"Rhea Malhotra",  contact:"rhea.mal@outlook.com",  date:"Jun 17, 2026", status:"paid",      shipping:8,  items:[["p9","Black · M",148]],                        addr1:"7 Jor Bagh",                 addr2:"New Delhi, DL 110003",    phone:"+91 99100 23310" },
-  { id:"o3", number:"KNK-2046", name:"Sara Dsouza",    contact:"sara.dsz@gmail.com",    date:"Jun 16, 2026", status:"packed",    shipping:0,  items:[["p7","Moss · M",186],["p5","Sage · S",88]],   addr1:"22 Brigade Road",            addr2:"Bengaluru, KA 560001",    phone:"+91 98860 77124" },
-  { id:"o4", number:"KNK-2045", name:"Ananya Reddy",   contact:"+91 90030 11298",       date:"Jun 15, 2026", status:"shipped",   shipping:0,  items:[["p3","Indigo · L",96]],                        addr1:"5 Banjara Hills Rd No.12",   addr2:"Hyderabad, TS 500034",    phone:"+91 90030 11298" },
-  { id:"o5", number:"KNK-2044", name:"Kavya Iyer",     contact:"kavya.iyer@gmail.com",  date:"Jun 14, 2026", status:"delivered", shipping:8,  items:[["p6","Rust · M",104],["p2","Blush · M",74]],  addr1:"31 Besant Nagar 2nd Ave",    addr2:"Chennai, TN 600090",      phone:"+91 94440 56672" },
-  { id:"o6", number:"KNK-2043", name:"Nisha Verma",    contact:"nisha.v@gmail.com",     date:"Jun 13, 2026", status:"delivered", shipping:8,  items:[["p1","Sand · L",128]],                         addr1:"18 Civil Lines",             addr2:"Jaipur, RJ 302006",       phone:"+91 90010 88451" },
-  { id:"o7", number:"KNK-2042", name:"Meera Joshi",    contact:"meera.joshi@gmail.com", date:"Jun 12, 2026", status:"cancelled", shipping:0,  items:[["p9","Olive · S",148]],                        addr1:"9 Koregaon Park Ln 7",       addr2:"Pune, MH 411001",         phone:"+91 98220 33019" },
-  { id:"o8", number:"KNK-2041", name:"Tanvi Shah",     contact:"tanvi.shah@gmail.com",  date:"Jun 11, 2026", status:"delivered", shipping:8,  items:[["p3","Terracotta · M",96],["p5","Cream · M",88]], addr1:"44 CG Road",              addr2:"Ahmedabad, GJ 380009",    phone:"+91 99090 71265" },
-];
+/* Orders and customers are loaded live from Supabase by loadOrders()
+   below. They start empty and are filled before the dashboard renders.
+   `let`, not `const`, because the loader reassigns them. */
+let ORDERS = [];
+let CUSTOMERS = [];
 
-const CUSTOMERS = [
-  { id:"c0", name:"Kanka Studio",  contact:"studio@kanka.co",       joined:"Jan 2021", isAdmin:true,  avatarBg:"#1A1008" },
-  { id:"c1", name:"Kavya Iyer",    contact:"kavya.iyer@gmail.com",  joined:"Mar 2024", isAdmin:false, avatarBg:"#8C7456" },
-  { id:"c2", name:"Sara Dsouza",   contact:"sara.dsz@gmail.com",    joined:"Aug 2024", isAdmin:false, avatarBg:"#6E7359" },
-  { id:"c3", name:"Aisha Khan",    contact:"aisha.k@gmail.com",     joined:"Nov 2024", isAdmin:false, avatarBg:"#9C6B4A" },
-  { id:"c4", name:"Tanvi Shah",    contact:"tanvi.shah@gmail.com",  joined:"Dec 2024", isAdmin:false, avatarBg:"#5E6E78" },
-  { id:"c5", name:"Rhea Malhotra", contact:"rhea.mal@outlook.com",  joined:"Feb 2025", isAdmin:false, avatarBg:"#A98B5E" },
-  { id:"c6", name:"Nisha Verma",   contact:"nisha.v@gmail.com",     joined:"Mar 2025", isAdmin:false, avatarBg:"#7E6E52" },
-  { id:"c7", name:"Ananya Reddy",  contact:"+91 90030 11298",       joined:"Apr 2025", isAdmin:false, avatarBg:"#8C9576" },
-  { id:"c8", name:"Meera Joshi",   contact:"meera.joshi@gmail.com", joined:"May 2025", isAdmin:false, avatarBg:"#B07A55" },
-];
+/* Money in this admin is whole rupees. The storefront stores rupees in
+   the DB (not paise), so amounts map straight across. */
+async function loadOrders() {
+  ordersLoadError = null;
+  try {
+    const query =
+        "select=id,order_number,status,payment_status,total_amount,shipping_amount,"
+      + "customer_name,customer_email,customer_phone,shipping_address,created_at,"
+      + "order_items(product_name,color,size,quantity,line_total)"
+      + "&order=created_at.desc";
+    const rows = await sbFetch(`orders?${query}`);
+
+    ORDERS = rows.map(o => {
+      const addr = o.shipping_address || {};
+      /* The panel expects items as [id, "Colour · Size", lineTotal]. */
+      const items = (o.order_items || []).map((it, i) => [
+        `it${i}`,
+        [it.product_name, [it.color, it.size].filter(Boolean).join(" · ")].filter(Boolean).join(" — "),
+        Number(it.line_total) || 0,
+      ]);
+      /* payment_status drives fulfilment; status is the fulfilment stage.
+         A brand-new paid order has status "paid" and moves forward from
+         there. Fall back to payment_status when status isn't a flow step. */
+      const stage = FLOW.includes(o.status) ? o.status
+                  : (o.payment_status === "paid" ? "paid" : "pending");
+      return {
+        id: o.id,
+        number: o.order_number,
+        name: o.customer_name || addr.name || "Guest",
+        contact: o.customer_email || o.customer_phone || "—",
+        date: o.created_at ? new Date(o.created_at).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}) : "",
+        status: o.status === "cancelled" ? "cancelled" : stage,
+        shipping: Number(o.shipping_amount) || 0,
+        items,
+        addr1: addr.line1 || addr.address || addr.street || "",
+        addr2: [addr.city, addr.state, addr.zip || addr.pincode].filter(Boolean).join(", "),
+        phone: o.customer_phone || addr.phone || "",
+      };
+    });
+
+    /* Derive the customer list from orders — one entry per email, with a
+       first-seen join date. The storefront has no separate customer feed
+       into this admin yet, so orders are the source. */
+    const byEmail = {};
+    for (const o of rows) {
+      const key = o.customer_email || o.customer_phone || o.id;
+      if (!byEmail[key] || new Date(o.created_at) < new Date(byEmail[key]._first)) {
+        byEmail[key] = {
+          id: key,
+          name: o.customer_name || "Guest",
+          contact: o.customer_email || o.customer_phone || "—",
+          _first: o.created_at,
+        };
+      }
+    }
+    CUSTOMERS = Object.values(byEmail).map(c => ({
+      id: c.id, name: c.name, contact: c.contact,
+      joined: c._first ? new Date(c._first).toLocaleDateString("en-IN",{month:"short",year:"numeric"}) : "",
+    }));
+
+    ordersLoaded = true;
+  } catch (err) {
+    ordersLoadError = err.message || "Couldn't load orders.";
+    ordersLoaded = true;
+  }
+}
 
 const STATUS_META = {
   pending:   { label:"Pending",   color:"#9A7B2E", bg:"#F4ECD7" },
@@ -673,8 +725,8 @@ function renderDash(wrap) {
     row.className = "table-row";
     row.style.paddingLeft = "6px"; row.style.paddingRight = "6px";
     row.innerHTML = `
-      <span style="font-family:'Jost';font-size:13px;font-weight:600;color:#1A1008;width:96px;flex-shrink:0;">${o.number}</span>
-      <span style="font-family:'Jost';font-size:13px;color:#6B5744;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${o.name}</span>
+      <span style="font-family:'Jost';font-size:13px;font-weight:600;color:#1A1008;width:96px;flex-shrink:0;">${esc(o.number)}</span>
+      <span style="font-family:'Jost';font-size:13px;color:#6B5744;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(o.name)}</span>
       <span class="hide-mobile" style="font-family:'Jost';font-size:12.5px;color:#9A8978;width:110px;flex-shrink:0;">${o.date}</span>`;
     row.appendChild(badge(o.status));
     row.innerHTML += `<span style="font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;color:#1A1008;width:78px;text-align:right;flex-shrink:0;">${money(orderTotal(o))}</span>`;
@@ -716,10 +768,10 @@ function renderOrders(wrap, q) {
     list.forEach(o => {
       const row = el("div"); row.className = "table-row";
       row.innerHTML = `
-        <span style="font-family:'Jost';font-size:13px;font-weight:600;color:#1A1008;width:96px;flex-shrink:0;">${o.number}</span>
+        <span style="font-family:'Jost';font-size:13px;font-weight:600;color:#1A1008;width:96px;flex-shrink:0;">${esc(o.number)}</span>
         <div style="flex:1;min-width:0;">
-          <p style="font-family:'Jost';font-size:13.5px;font-weight:500;color:#1A1008;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${o.name}</p>
-          <p style="font-family:'Jost';font-size:11.5px;color:#A89684;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${o.contact}</p>
+          <p style="font-family:'Jost';font-size:13.5px;font-weight:500;color:#1A1008;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(o.name)}</p>
+          <p style="font-family:'Jost';font-size:11.5px;color:#A89684;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(o.contact)}</p>
         </div>
         <span class="hide-mobile" style="font-family:'Jost';font-size:12.5px;color:#9A8978;width:120px;flex-shrink:0;">${o.date}</span>
         <span class="hide-mobile" style="font-family:'Jost';font-size:12.5px;color:#9A8978;width:70px;flex-shrink:0;">${o.items.length} item${o.items.length!==1?"s":""}</span>`;
@@ -759,8 +811,8 @@ function renderCustomers(wrap, q) {
       <div style="display:flex;align-items:center;gap:13px;flex:1;min-width:0;">
         <div style="width:42px;height:42px;border-radius:50%;flex-shrink:0;background:${c.avatarBg};color:#FAF9F7;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;">${c.name.charAt(0)}</div>
         <div style="min-width:0;">
-          <p style="font-family:'Jost';font-size:14px;font-weight:600;color:#1A1008;display:flex;align-items:center;gap:7px;">${c.name}${c.isAdmin?`<span style="font-family:'Jost';font-size:9px;font-weight:600;letter-spacing:0.1em;color:#C5A468;border:1px solid #E3D2AE;padding:1px 6px;border-radius:999px;">OWNER</span>`:""}</p>
-          <p style="font-family:'Jost';font-size:12px;color:#A89684;">${c.contact}</p>
+          <p style="font-family:'Jost';font-size:14px;font-weight:600;color:#1A1008;display:flex;align-items:center;gap:7px;">${esc(c.name)}${c.isAdmin?`<span style="font-family:'Jost';font-size:9px;font-weight:600;letter-spacing:0.1em;color:#C5A468;border:1px solid #E3D2AE;padding:1px 6px;border-radius:999px;">OWNER</span>`:""}</p>
+          <p style="font-family:'Jost';font-size:12px;color:#A89684;">${esc(c.contact)}</p>
         </div>
       </div>
       <span class="hide-mobile" style="font-family:'Jost';font-size:12.5px;color:#9A8978;width:130px;flex-shrink:0;">${c.joined}</span>
@@ -1278,7 +1330,7 @@ function renderPanel(o) {
       <div style="display:flex;align-items:flex-start;justify-content:space-between;">
         <div>
           <p style="font-family:'Jost';font-size:10px;font-weight:600;letter-spacing:0.16em;color:#C5A468;margin-bottom:8px;">ORDER DETAIL</p>
-          <h2 style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;color:#FAF9F7;line-height:1;">${o.number}</h2>
+          <h2 style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;color:#FAF9F7;line-height:1;">${esc(o.number)}</h2>
           <p style="font-family:'Jost';font-size:12.5px;color:rgba(250,249,247,0.6);margin-top:7px;">Placed ${o.date}</p>
         </div>
         <button id="close-panel" style="width:36px;height:36px;border-radius:50%;background:rgba(250,249,247,0.1);border:none;color:#FAF9F7;font-size:16px;cursor:pointer;">✕</button>
@@ -1299,8 +1351,8 @@ function renderPanel(o) {
 
       <div style="background:#FBF8F3;border:1px solid #EAE1D4;border-radius:12px;padding:18px 20px;margin-bottom:16px;">
         <p style="font-family:'Jost';font-size:10px;font-weight:600;letter-spacing:0.12em;color:#9A8978;margin-bottom:11px;">DELIVER TO</p>
-        <p style="font-family:'Jost';font-size:14px;font-weight:600;color:#1A1008;margin-bottom:5px;">${o.name}</p>
-        <p style="font-family:'Jost';font-size:13px;color:#6B5744;line-height:1.7;">${o.addr1}<br/>${o.addr2}<br/>${o.phone}</p>
+        <p style="font-family:'Jost';font-size:14px;font-weight:600;color:#1A1008;margin-bottom:5px;">${esc(o.name)}</p>
+        <p style="font-family:'Jost';font-size:13px;color:#6B5744;line-height:1.7;">${esc(o.addr1)}<br/>${esc(o.addr2)}<br/>${esc(o.phone)}</p>
       </div>
 
       <div style="background:#FBF8F3;border:1px solid #EAE1D4;border-radius:12px;padding:18px 20px;margin-bottom:16px;">
@@ -1311,7 +1363,7 @@ function renderPanel(o) {
             <div style="width:42px;height:50px;border-radius:6px;flex-shrink:0;background:${p?p.swatch:"#D8CDBD"};"></div>
             <div style="flex:1;min-width:0;">
               <p style="font-family:'Jost';font-size:13.5px;font-weight:500;color:#1A1008;">${p?p.name:"Item"}</p>
-              <p style="font-family:'Jost';font-size:12px;color:#A89684;">${it[1]}</p>
+              <p style="font-family:'Jost';font-size:12px;color:#A89684;">${esc(it[1])}</p>
             </div>
             <span style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:#1A1008;">${money(it[2])}</span>
           </div>`;
@@ -1343,14 +1395,30 @@ function renderPanel(o) {
         fontFamily:"Jost", fontSize:"12px", fontWeight:"500",
         cursor:"pointer",
       },
-      onclick: () => {
-        o.status = s;
+      onclick: async () => {
+        const prev = o.status;
+        o.status = s;               // optimistic
         renderPanel(o);
-        // refresh the active screen
         const scr = $("#screen-"+state.screen);
         scr.innerHTML=""; renderScreen(state.screen, scr);
-        // refresh nav badges
         render();
+        try {
+          /* Persist. The DB column is `status`; payment_status is owned by
+             the payment flow and left alone here. */
+          await sbFetch(`orders?id=eq.${o.id}`, {
+            method: "PATCH",
+            body: { status: s },
+            prefer: "return=minimal",
+          });
+        } catch (err) {
+          /* Revert the UI if the write didn't stick. */
+          o.status = prev;
+          alert("Couldn't update the order status. Please try again.");
+          renderPanel(o);
+          const scr2 = $("#screen-"+state.screen);
+          scr2.innerHTML=""; renderScreen(state.screen, scr2);
+          render();
+        }
       }
     }, isCancel ? "Cancel" : STATUS_META[s].label);
     actionsWrap.appendChild(btn);
@@ -1390,7 +1458,7 @@ async function attemptLogin() {
   label.innerHTML = '<span class="spinner"></span>';
   try {
     await adminAuth.login(email, pw);
-    await loadProducts();
+    await Promise.all([loadProducts(), loadOrders()]);
     goTo("dashboard");
   } catch (err) {
     errEl.textContent = err.message || "Couldn't sign in.";
@@ -1435,7 +1503,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Resume an existing admin session if we still have one, else show login
   if (adminAuth.current) {
-    await loadProducts();
+    await Promise.all([loadProducts(), loadOrders()]);
     state.screen = productsLoadError ? "login" : "dashboard";
     if (productsLoadError) { await adminAuth.logout(); }
   } else {
