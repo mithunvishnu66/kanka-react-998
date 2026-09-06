@@ -1069,7 +1069,7 @@ function ProductCard({ product }) {
         <StarRating rating={product.rating} size={12} />
         <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontFamily: "Jost", fontSize: 15, fontWeight: 500, color: "#1A1008" }}>₹{product.price.toLocaleString("en-IN")}</span>
-          {product.originalPrice && <>
+          {product.originalPrice && product.originalPrice > product.price && <>
             <span style={{ fontFamily: "Jost", fontSize: 13, color: "#B8A99A", textDecoration: "line-through" }}>₹{product.originalPrice.toLocaleString("en-IN")}</span>
             <span style={{ fontFamily: "Jost", fontSize: 11, color: "#C5A468", fontWeight: 600 }}>−{product.discount}%</span>
           </>}
@@ -1112,14 +1112,15 @@ function Navbar({ transparent = false, noSearch = false }) {
   const iconColor = "#1A1008";
 
   return (
-    <header style={{ position: "relative", zIndex: 900, marginBottom: -18 }}>
+    <header style={{ position: "relative", zIndex: 900, marginBottom: -93 }}>
       <nav style={{
         height: 61,
+        margin: 16,
         background: "#FAF7EE",
-        borderRadius: "0 0 18px 18px",
-        borderBottom: "1px solid rgba(26,16,8,0.12)",
-        boxShadow: "0 8px 22px -12px rgba(10,6,2,0.55)",
-        display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 40px", position: "relative"
+        borderRadius: 10,
+        border: "1px solid rgba(26,16,8,0.10)",
+        boxShadow: "0 10px 30px -12px rgba(10,6,2,0.6)",
+        display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 28px", position: "relative"
       }}>
         {/* Left — logo */}
         <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
@@ -1981,7 +1982,7 @@ function ListingPage() {
 
   const filtered = useMemo(() => {
     let p = [...window.PRODUCTS];
-    if (search) p = p.filter(x => x.name.toLowerCase().includes(search.toLowerCase()));
+    if (search) p = p.filter(x => (x.name || "").toLowerCase().includes(search.toLowerCase()));
     if (filters.categories.length) p = p.filter(x => filters.categories.includes(x.category));
     if (filters.tags && filters.tags.length) p = p.filter(x => filters.tags.some(t => x.tags.includes(t)));
     p = p.filter(x => x.price <= filters.priceMax);
@@ -4246,7 +4247,7 @@ function StickyAddToCart({ price, originalPrice, onAdd, onBuyNow, disabled, isAd
     <div className="sticky-bottom-cta">
       <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 80, paddingLeft: 4 }}>
         <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 19, fontWeight: 500, color: "#1A1008", lineHeight: 1 }}>₹{price.toLocaleString("en-IN")}</span>
-        {originalPrice && (
+        {originalPrice && originalPrice > price && (
           <span style={{ fontFamily: "Jost", fontSize: 11, color: "#B8A99A", textDecoration: "line-through" }}>₹{originalPrice.toLocaleString("en-IN")}</span>
         )}
       </div>
