@@ -1231,6 +1231,19 @@ async function saveProductDraft() {
   if (!d.slug.trim())            { d.error = "Give the product a slug."; renderProductPanel(); return; }
   const priceNum = Number(d.price);
   if (!Number.isFinite(priceNum) || priceNum <= 0) { d.error = "Enter a valid price."; renderProductPanel(); return; }
+  /* original_price is the struck-through "was" price. If set it must be
+     HIGHER than the selling price, or the storefront shows a negative
+     saving. Empty is fine — it just means the item isn't on sale. */
+  if (d.originalPrice && String(d.originalPrice).trim()) {
+    const origNum = Number(d.originalPrice);
+    if (!Number.isFinite(origNum) || origNum <= 0) {
+      d.error = "Original price isn't a valid number."; renderProductPanel(); return;
+    }
+    if (origNum <= priceNum) {
+      d.error = "Original price must be higher than the selling price (it's the 'was' price). Leave it blank if the item isn't on sale.";
+      renderProductPanel(); return;
+    }
+  }
   const colors = d.colors.filter(c => c.name.trim());
   if (!colors.length)            { d.error = "Add at least one colour."; renderProductPanel(); return; }
   if (!d.sizes.length)           { d.error = "Select at least one size."; renderProductPanel(); return; }
