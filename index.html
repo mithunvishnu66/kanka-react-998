@@ -48,6 +48,19 @@
       0%   { transform: translateX(0); }
       100% { transform: translateX(-50%); }
     }
+    /* Header search: field sweeps open from the icon side */
+    @keyframes kkSearchOpen {
+      from { opacity: 0; transform: scaleX(0.55) translateX(26px); }
+      to   { opacity: 1; transform: scaleX(1) translateX(0); }
+    }
+    @keyframes kkSearchRule {
+      from { transform: scaleX(0); }
+      to   { transform: scaleX(1); }
+    }
+    @keyframes kkSuggestIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
     @keyframes slideDown {
       from { opacity: 0; transform: translateY(-8px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -1170,17 +1183,93 @@ function Navbar({ transparent = false, noSearch = false, overlay = false }) {
           </button>
         </div>
 
-        {/* Center — nav links */}
+        {/* Center — nav links, or the inline search field when open */}
+        {!(!noSearch && searchOpen) ?
         <div className="hide-mobile" style={{ display: "flex", gap: 32, justifyContent: "center" }}>
           {navLinks.map((l) =>
           <NavLink key={l.label} label={l.label} color={iconColor}
           onClick={() => navigate("listing", { listFilter: l.filter })} />
           )}
+        </div> :
+        <div className="hide-mobile" style={{
+          position: "relative", width: 420, maxWidth: "42vw",
+          transformOrigin: "right center",
+          animation: "kkSearchOpen 0.34s cubic-bezier(0.22,1,0.36,1) both"
+        }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 10,
+            paddingBottom: 4, position: "relative"
+          }}>
+            <span style={{
+              position: "absolute", bottom: 0, left: 0, right: 0, height: 1,
+              background: "#DDD0C0", transformOrigin: "right center",
+              animation: "kkSearchRule 0.42s cubic-bezier(0.22,1,0.36,1) 0.06s both"
+            }} />
+            <IconSearch color="#8C7B6E" />
+            <input
+            autoFocus
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && query.trim()) {
+                navigate("listing", { listFilter: "all", searchQuery: query.trim() });
+                setSearchOpen(false);setQuery("");
+              }
+              if (e.key === "Escape") { setSearchOpen(false);setQuery(""); }
+            }}
+            placeholder="Search dresses, styles, fabrics…"
+            style={{
+              flex: 1, minWidth: 0, border: "none", background: "transparent", outline: "none",
+              fontFamily: "Jost", fontSize: 14, letterSpacing: "0.02em", color: "#1A1008"
+            }} />
+          </div>
+
+          {suggestions.length > 0 &&
+            <div style={{
+              position: "absolute", top: "calc(100% + 10px)", left: 0, right: 0, zIndex: 950,
+              background: "#FFFFFF", border: "1px solid #E8E0D5",
+              boxShadow: "0 18px 40px -20px rgba(26,16,8,0.35)",
+              padding: 8, animation: "kkSuggestIn 0.24s cubic-bezier(0.22,1,0.36,1) both"
+            }}>
+              {suggestions.map(p => (
+                <button key={p.id} onClick={() => { navigate("detail", { productId: p.id }); setSearchOpen(false); setQuery(""); }}
+                  style={{
+                    width: "100%", display: "flex", alignItems: "center", gap: 14,
+                    background: "none", border: "none", cursor: "pointer",
+                    padding: "8px 10px", textAlign: "left"
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = "#F7F3EE"}
+                  onMouseLeave={e => e.currentTarget.style.background = "none"}>
+                  <img src={p.image} alt="" style={{ width: 44, height: 56, objectFit: "cover", background: "#F7F3EE" }} />
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: "block", fontFamily: "Jost", fontSize: 14, color: "#1A1008", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</span>
+                    <span style={{ display: "block", fontFamily: "Jost", fontSize: 11, letterSpacing: "0.1em", color: "#8C7B6E", textTransform: "uppercase" }}>{p.category}</span>
+                  </span>
+                  <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 16, color: "#1A1008" }}>₹{(p.price || 0).toLocaleString("en-IN")}</span>
+                </button>
+              ))}
+              <button onClick={() => { navigate("listing", { listFilter: "all", searchQuery: query.trim() }); setSearchOpen(false); setQuery(""); }}
+                style={{
+                  width: "100%", background: "none", border: "none", borderTop: "1px solid #EDE8E0", cursor: "pointer",
+                  fontFamily: "Jost", fontSize: 11, fontWeight: 600, letterSpacing: "0.13em",
+                  color: "#7B1E1E", padding: "12px 10px 8px", marginTop: 6, textAlign: "left"
+                }}>SEE ALL RESULTS FOR "{query.trim().toUpperCase()}"</button>
+            </div>
+          }
+          {query.trim().length > 0 && suggestions.length === 0 &&
+            <p style={{
+              position: "absolute", top: "calc(100% + 10px)", left: 0, right: 0, zIndex: 950,
+              background: "#FFFFFF", border: "1px solid #E8E0D5", margin: 0,
+              boxShadow: "0 18px 40px -20px rgba(26,16,8,0.35)",
+              padding: "14px 16px", fontFamily: "Jost", fontSize: 13, color: "#8C7B6E"
+            }}>No matches for "{query.trim()}". Press Enter to search everything.</p>
+          }
         </div>
+        }
 
         {/* Right — icons */}
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 22 }}>
-          {!noSearch && <button onClick={() => setSearchOpen((s) => !s)} className="hide-mobile" style={{ background: "none", border: "none", color: iconColor, padding: 4, transition: "color 0.35s", lineHeight: 0 }}><IconSearch /></button>}
+          {!noSearch && <button onClick={() => { setSearchOpen((s) => !s); setQuery(""); }} className="hide-mobile" style={{ background: "none", border: "none", color: iconColor, padding: 4, transition: "color 0.35s", lineHeight: 0 }}>{searchOpen ? <IconX /> : <IconSearch />}</button>}
           <div className="hide-mobile" style={{ display: "flex", alignItems: "center", gap: 22 }}>
             <button onClick={() => navigate(window.auth?.current ? "account" : "login")} style={{ background: "none", border: "none", color: iconColor, padding: 4, transition: "color 0.35s", lineHeight: 0 }}>
               <IconUser />
@@ -1203,71 +1292,6 @@ function Navbar({ transparent = false, noSearch = false, overlay = false }) {
           </button>
         </div>
       </nav>
-
-      {/* Search bar */}
-      {!noSearch && searchOpen &&
-      <div style={{
-        position: "absolute", top: "100%", left: 0, right: 0, zIndex: 850,
-        background: "#FFFFFF", borderBottom: "1px solid #E8E0D5",
-        padding: "18px 40px",
-        animation: "slideDown 0.2s ease"
-      }}>
-          <div style={{ maxWidth: 560, margin: "0 auto", display: "flex", alignItems: "center", gap: 12 }}>
-            <IconSearch color="#B8A99A" />
-            <input
-            autoFocus
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && query.trim()) {
-                navigate("listing", { listFilter: "all", searchQuery: query.trim() });
-                setSearchOpen(false);setQuery("");
-              }
-              if (e.key === "Escape") setSearchOpen(false);
-            }}
-            placeholder="Search dresses, styles, fabrics…"
-            style={{
-              flex: 1, border: "none", background: "transparent", outline: "none",
-              fontFamily: "Jost", fontSize: 16, color: "#1A1008"
-            }} />
-          
-            <button onClick={() => setSearchOpen(false)} style={{ background: "none", border: "none", color: "#B8A99A", lineHeight: 0 }}>
-              <IconX />
-            </button>
-          </div>
-
-          {suggestions.length > 0 &&
-            <div style={{ maxWidth: 560, margin: "14px auto 0", borderTop: "1px solid #EDE8E0", paddingTop: 10 }}>
-              {suggestions.map(p => (
-                <button key={p.id} onClick={() => { navigate("detail", { productId: p.id }); setSearchOpen(false); setQuery(""); }}
-                  style={{
-                    width: "100%", display: "flex", alignItems: "center", gap: 14,
-                    background: "none", border: "none", borderRadius: 8, cursor: "pointer",
-                    padding: "8px 10px", textAlign: "left"
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = "#F7F3EE"}
-                  onMouseLeave={e => e.currentTarget.style.background = "none"}>
-                  <img src={p.image} alt="" style={{ width: 44, height: 56, objectFit: "cover", borderRadius: 4, background: "#F7F3EE" }} />
-                  <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: "block", fontFamily: "Jost", fontSize: 14, color: "#1A1008", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</span>
-                    <span style={{ display: "block", fontFamily: "Jost", fontSize: 11, letterSpacing: "0.1em", color: "#8C7B6E", textTransform: "uppercase" }}>{p.category}</span>
-                  </span>
-                  <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 16, color: "#1A1008" }}>₹{(p.price || 0).toLocaleString("en-IN")}</span>
-                </button>
-              ))}
-              <button onClick={() => { navigate("listing", { listFilter: "all", searchQuery: query.trim() }); setSearchOpen(false); setQuery(""); }}
-                style={{
-                  width: "100%", background: "none", border: "none", cursor: "pointer",
-                  fontFamily: "Jost", fontSize: 11, fontWeight: 600, letterSpacing: "0.13em",
-                  color: "#7B1E1E", padding: "12px 10px 4px", textAlign: "left"
-                }}>SEE ALL RESULTS FOR "{query.trim().toUpperCase()}"</button>
-            </div>
-          }
-          {query.trim().length > 0 && suggestions.length === 0 &&
-            <p style={{ maxWidth: 560, margin: "14px auto 0", fontFamily: "Jost", fontSize: 13, color: "#8C7B6E" }}>No matches for "{query.trim()}". Press Enter to search everything.</p>
-          }
-        </div>
-      }
 
       {/* Mobile menu */}
       {mobileOpen &&
