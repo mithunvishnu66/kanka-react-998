@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Kanka — Luxury Women's Fashion</title>
+  <title>Kanka — Traditional Menswear</title>
   <template id="__bundler_thumbnail">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140">
       <rect width="200" height="140" fill="#1A1008"/>
@@ -428,32 +428,20 @@ window.SUPABASE_KEY = SUPABASE_KEY;
 
 /* ─── STATIC: COLLECTIONS ───────────────────────────────────────────── */
 window.COLLECTIONS = [
-  { id:1, title:"Evening Elegance", subtitle:"Dressed for the night",
+  { id:1, title:"T-Shirts", subtitle:"Everyday comfort",
     image:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=1000&auto=format&fit=crop&q=80",
-    cta:"Shop Evening", filter:"tshirt" },
-  { id:2, title:"Daywear Edit", subtitle:"Effortless all day",
+    cta:"Shop T-Shirts", filter:"tshirt" },
+  { id:2, title:"Veshti", subtitle:"Traditional wear",
     image:"https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&h=1000&auto=format&fit=crop&q=80",
-    cta:"Shop Daywear", filter:"veshti" },
-  { id:3, title:"Resort Capsule", subtitle:"Sun, sea & style",
+    cta:"Shop Veshti", filter:"veshti" },
+  { id:3, title:"Pants", subtitle:"Smart & casual",
     image:"https://images.unsplash.com/photo-1483985988-d65a12952491?w=800&h=1000&auto=format&fit=crop&q=80",
-    cta:"Shop Resort", filter:"pant" },
+    cta:"Shop Pants", filter:"pant" },
 ];
 
 /* ─── STATIC: TESTIMONIALS ──────────────────────────────────────────── */
-window.TESTIMONIALS = [
-  { id:1, name:"Isabelle Laurent", location:"Paris, France", rating:5,
-    text:"The silk midi dress is absolutely breathtaking. The quality surpassed every expectation — it drapes beautifully and the finish is impeccable. I wore it to a gallery opening and received compliments all evening.",
-    avatar:"IL", product:"Silk Charmeuse Midi Dress" },
-  { id:2, name:"Sophia Chen", location:"New York, USA", rating:5,
-    text:"I've been searching for the perfect wrap dress and this is it. The linen is substantial yet breathable, the fit is incredibly flattering, and the craftsmanship is evident in every detail. Worth every penny.",
-    avatar:"SC", product:"Linen Wrap Dress" },
-  { id:3, name:"Amara Okonkwo", location:"London, UK", rating:5,
-    text:"Kanka has elevated my wardrobe completely. The velvet gown is a masterpiece — the color depth, the weight of the fabric, the way it moves. I felt like I was wearing art.",
-    avatar:"AO", product:"Velvet Evening Gown" },
-  { id:4, name:"Elena Marchetti", location:"Milan, Italy", rating:5,
-    text:"As someone who works in fashion, I am very particular about quality. Kanka delivers on every level. The cashmere knit is extraordinarily soft and the construction is absolutely flawless.",
-    avatar:"EM", product:"Cashmere Knit Mini" },
-];
+window.TESTIMONIALS = [];  /* Fake testimonials removed. Add real customer
+   reviews here when available — never invent them. */
 
 /* ─── STATIC: INSTAGRAM ─────────────────────────────────────────────── */
 window.INSTAGRAM_PHOTOS = [
@@ -1404,7 +1392,7 @@ function Footer() {
             <div>
               <h2 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 30, fontWeight: 600, letterSpacing: "0.25em", color: "#FAF9F7", marginBottom: 16 }}>KANKA</h2>
               <p style={{ fontFamily: "Jost", fontSize: 13, lineHeight: 1.75, maxWidth: 260, marginBottom: 24 }}>
-                Luxury women's fashion crafted with intention. Every piece tells a story of artisanship, sustainability, and timeless elegance.
+                Traditional Indian menswear, made with care. Classic pieces crafted from quality fabrics for everyday wear and occasions.
               </p>
               <div style={{ display: "flex", gap: 10 }}>
                 {[<IconInstagram />, "FB", "PT"].map((s, i) =>
@@ -1522,26 +1510,26 @@ function Hero() {
   const slides = [
     {
       image: "DSC07510.jpg.jpeg",
-      label: "EVENING EDIT",
-      heading1: "Dressed",
-      heading2: "for the night.",
-      sub: "Opulent fabrics. Unforgettable moments.",
+      label: "NEW ARRIVALS",
+      heading1: "Traditional",
+      heading2: "menswear.",
+      sub: "Classic pieces, made from quality fabrics.",
       filter: "tshirt",
     },
     {
       image: "DSC07624.jpg.jpeg",
-      label: "SS 2026 COLLECTION",
-      heading1: "Dressed",
-      heading2: "for the night.",
-      sub: "Where artisanship meets the modern silhouette.",
+      label: "SHOP THE COLLECTION",
+      heading1: "Everyday",
+      heading2: "essentials.",
+      sub: "Comfortable, well-made staples for every day.",
       filter: "all",
     },
     {
       image: "DSC07558.jpg.jpeg",
-      label: "RESORT CAPSULE",
-      heading1: "Sun,",
-      heading2: "sea & style.",
-      sub: "Light, luxurious pieces for warmer days.",
+      label: "TRADITIONAL WEAR",
+      heading1: "Veshti",
+      heading2: "& more.",
+      sub: "Traditional pieces for festivals and occasions.",
       filter: "veshti",
     },
   ];
@@ -1622,7 +1610,7 @@ function Hero() {
 
 /* ─── Ticker ────────────────────────────────────────────────────── */
 function Ticker() {
-  const items = ["FREE SHIPPING OVER ₹5,000","COMPLIMENTARY RETURNS","SECURE CHECKOUT","CRAFTED WITH CARE","SUSTAINABLE FASHION","SS 2026 COLLECTION NOW LIVE"];
+  const items = ["FREE SHIPPING OVER ₹5,000","COMPLIMENTARY RETURNS","SECURE CHECKOUT","CRAFTED WITH CARE","CRAFTED IN INDIA","NEW ARRIVALS NOW LIVE"];
   const text = [...items, ...items].join("   ·   ");
   return (
     <div style={{ background:"#1A1008", padding:"13px 0", overflow:"hidden" }}>
@@ -1741,9 +1729,13 @@ function Testimonials() {
   const [active, setActive] = useState(0);
   const data = window.TESTIMONIALS;
   useEffect(() => {
+    if (!data || data.length === 0) return;
     const t = setInterval(() => setActive(a => (a+1) % data.length), 5200);
     return () => clearInterval(t);
   }, []);
+  /* No reviews yet — hide the section rather than show an empty one.
+     Guard sits after hooks (rules of hooks). */
+  if (!data || data.length === 0) return null;
 
   return (
     <section className="section" style={{ background:"#1A1008" }}>
@@ -4332,7 +4324,7 @@ function MobileSearchDrawer({ open, onClose }) {
           <div style={{ marginTop: 22, display: suggestions.length > 0 ? "none" : "block" }}>
             <p style={{ fontFamily: "Jost", fontSize: 11, fontWeight: 600, letterSpacing: "0.13em", color: "#8C7B6E", marginBottom: 12 }}>POPULAR SEARCHES</p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {["Silk", "Linen", "Midi", "Cashmere", "Velvet", "Floral"].map(t => (
+              {["T-Shirt", "Veshti", "Pant", "Cotton", "Linen", "White"].map(t => (
                 <button key={t} type="button" onClick={() => quickPick(t)} style={{
                   background: "#F7F3EE", border: "1px solid #EDE8E0", borderRadius: 20,
                   fontFamily: "Jost", fontSize: 13, color: "#1A1008",
