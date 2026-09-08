@@ -11,7 +11,7 @@
 import {
   db, razorpay, ENV, requireEnv,
   json, methodGuard, fail, orderNumber, idempotencyKey, fromPaise,
-  getAuthedUserId,
+  getAuthedUserId, rateLimit, tooManyRequests,
 } from "./_lib/kanka.js";
 import { buildQuote, QuoteError } from "./_lib/quote.js";
 
@@ -54,6 +54,14 @@ function sanitiseCustomer(c = {}) {
 
 export default async function handler(req, res) {
   if (!methodGuard(req, res, "POST")) return;
+
+  /* Each call hits the DB twice, calls the Razorpay orders API, and writes
+     a pending order + line items — all before any payment happens. Cap it
+     well above what a real shopper needs, far below what a flood needs. */
+  const limit = rateLimit(req, { key: "create-order", max: 10, windowMs: 60_000 });
+  if (!limit.ok) {
+    return tooManyRequests(res, limit.retryAfter);
+  }
 
   try {
     requireEnv("RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET", "SUPABASE_URL", "SUPABASE_SERVICE_KEY");
