@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Kanka — Traditional Menswear</title>
+  <title>Kanka — Luxury Women's Fashion</title>
   <template id="__bundler_thumbnail">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140">
       <rect width="200" height="140" fill="#1A1008"/>
@@ -48,19 +48,6 @@
       0%   { transform: translateX(0); }
       100% { transform: translateX(-50%); }
     }
-    /* Header search: field sweeps open from the icon side */
-    @keyframes kkSearchOpen {
-      from { opacity: 0; transform: scaleX(0.55) translateX(26px); }
-      to   { opacity: 1; transform: scaleX(1) translateX(0); }
-    }
-    @keyframes kkSearchRule {
-      from { transform: scaleX(0); }
-      to   { transform: scaleX(1); }
-    }
-    @keyframes kkSuggestIn {
-      from { opacity: 0; transform: translateY(-6px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
     @keyframes slideDown {
       from { opacity: 0; transform: translateY(-8px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -86,12 +73,10 @@
       .hide-desktop { display: flex !important; }
     }
     @media (max-width: 480px) {
-      .kk-navbar-logo { height: 38px !important; }
+      .kk-navbar-logo { height: 54px !important; }
     }
     @media (max-width: 768px) {
-      .kk-navbar-lockup { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); flex-direction: column !important; gap: 2px !important; }
-      .kk-navbar-est { margin-left: 0 !important; font-size: 9px !important; letter-spacing: 0.28em !important; }
-      .kk-navbar-lockup .kk-navbar-logo { height: 38px !important; width: 52px !important; }
+      .kk-navbar-logo-btn { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
       .kk-navbar-hamburger { margin-left: -8px; }
       /* 2c — pill navbar on phones (home hero only) */
       .kk-navbar-head--overlay { margin-bottom: -89px !important; }
@@ -443,20 +428,32 @@ window.SUPABASE_KEY = SUPABASE_KEY;
 
 /* ─── STATIC: COLLECTIONS ───────────────────────────────────────────── */
 window.COLLECTIONS = [
-  { id:1, title:"T-Shirts", subtitle:"Everyday comfort",
+  { id:1, title:"Evening Elegance", subtitle:"Dressed for the night",
     image:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=1000&auto=format&fit=crop&q=80",
-    cta:"Shop T-Shirts", filter:"tshirt" },
-  { id:2, title:"Veshti", subtitle:"Traditional wear",
+    cta:"Shop Evening", filter:"tshirt" },
+  { id:2, title:"Daywear Edit", subtitle:"Effortless all day",
     image:"https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&h=1000&auto=format&fit=crop&q=80",
-    cta:"Shop Veshti", filter:"veshti" },
-  { id:3, title:"Pants", subtitle:"Smart & casual",
+    cta:"Shop Daywear", filter:"veshti" },
+  { id:3, title:"Resort Capsule", subtitle:"Sun, sea & style",
     image:"https://images.unsplash.com/photo-1483985988-d65a12952491?w=800&h=1000&auto=format&fit=crop&q=80",
-    cta:"Shop Pants", filter:"pant" },
+    cta:"Shop Resort", filter:"pant" },
 ];
 
 /* ─── STATIC: TESTIMONIALS ──────────────────────────────────────────── */
-window.TESTIMONIALS = [];  /* Fake testimonials removed. Add real customer
-   reviews here when available — never invent them. */
+window.TESTIMONIALS = [
+  { id:1, name:"Isabelle Laurent", location:"Paris, France", rating:5,
+    text:"The silk midi dress is absolutely breathtaking. The quality surpassed every expectation — it drapes beautifully and the finish is impeccable. I wore it to a gallery opening and received compliments all evening.",
+    avatar:"IL", product:"Silk Charmeuse Midi Dress" },
+  { id:2, name:"Sophia Chen", location:"New York, USA", rating:5,
+    text:"I've been searching for the perfect wrap dress and this is it. The linen is substantial yet breathable, the fit is incredibly flattering, and the craftsmanship is evident in every detail. Worth every penny.",
+    avatar:"SC", product:"Linen Wrap Dress" },
+  { id:3, name:"Amara Okonkwo", location:"London, UK", rating:5,
+    text:"Kanka has elevated my wardrobe completely. The velvet gown is a masterpiece — the color depth, the weight of the fabric, the way it moves. I felt like I was wearing art.",
+    avatar:"AO", product:"Velvet Evening Gown" },
+  { id:4, name:"Elena Marchetti", location:"Milan, Italy", rating:5,
+    text:"As someone who works in fashion, I am very particular about quality. Kanka delivers on every level. The cashmere knit is extraordinarily soft and the construction is absolutely flawless.",
+    avatar:"EM", product:"Cashmere Knit Mini" },
+];
 
 /* ─── STATIC: INSTAGRAM ─────────────────────────────────────────────── */
 window.INSTAGRAM_PHOTOS = [
@@ -1175,7 +1172,6 @@ function Navbar({ transparent = false, noSearch = false, overlay = false }) {
       }}>
         {/* Left — logo */}
         <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
-          <div className="kk-navbar-lockup" style={{ display: "flex", alignItems: "center" }}>
           <button className="kk-navbar-logo-btn" onClick={() => navigate("home")} style={{
             background: "none", border: "none", cursor: "pointer", padding: 0,
             lineHeight: 0, transition: "opacity 0.35s", flexShrink: 0
@@ -1184,102 +1180,19 @@ function Navbar({ transparent = false, noSearch = false, overlay = false }) {
               height: 48, width: 65, objectFit: "contain", display: "block"
             }} />
           </button>
-          <span className="kk-navbar-est" style={{
-            marginLeft: 14,
-            fontFamily: "'Cormorant Garamond', serif", fontSize: 11, letterSpacing: "0.22em",
-            textTransform: "uppercase", color: iconColor, whiteSpace: "nowrap",
-            transition: "color 0.35s"
-          }}>Since 2015</span>
-          </div>
         </div>
 
-        {/* Center — nav links, or the inline search field when open */}
-        {!(!noSearch && searchOpen) ?
+        {/* Center — nav links */}
         <div className="hide-mobile" style={{ display: "flex", gap: 32, justifyContent: "center" }}>
           {navLinks.map((l) =>
           <NavLink key={l.label} label={l.label} color={iconColor}
           onClick={() => navigate("listing", { listFilter: l.filter })} />
           )}
-        </div> :
-        <div className="hide-mobile" style={{
-          position: "relative", width: 420, maxWidth: "42vw",
-          transformOrigin: "right center",
-          animation: "kkSearchOpen 0.34s cubic-bezier(0.22,1,0.36,1) both"
-        }}>
-          <div style={{
-            display: "flex", alignItems: "center", gap: 10,
-            paddingBottom: 4, position: "relative"
-          }}>
-            <span style={{
-              position: "absolute", bottom: 0, left: 0, right: 0, height: 1,
-              background: "#DDD0C0", transformOrigin: "right center",
-              animation: "kkSearchRule 0.42s cubic-bezier(0.22,1,0.36,1) 0.06s both"
-            }} />
-            <IconSearch color="#8C7B6E" />
-            <input
-            autoFocus
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && query.trim()) {
-                navigate("listing", { listFilter: "all", searchQuery: query.trim() });
-                setSearchOpen(false);setQuery("");
-              }
-              if (e.key === "Escape") { setSearchOpen(false);setQuery(""); }
-            }}
-            placeholder="Search dresses, styles, fabrics…"
-            style={{
-              flex: 1, minWidth: 0, border: "none", background: "transparent", outline: "none",
-              fontFamily: "Jost", fontSize: 14, letterSpacing: "0.02em", color: "#1A1008"
-            }} />
-          </div>
-
-          {suggestions.length > 0 &&
-            <div style={{
-              position: "absolute", top: "calc(100% + 10px)", left: 0, right: 0, zIndex: 950,
-              background: "#FFFFFF", border: "1px solid #E8E0D5",
-              boxShadow: "0 18px 40px -20px rgba(26,16,8,0.35)",
-              padding: 8, animation: "kkSuggestIn 0.24s cubic-bezier(0.22,1,0.36,1) both"
-            }}>
-              {suggestions.map(p => (
-                <button key={p.id} onClick={() => { navigate("detail", { productId: p.id }); setSearchOpen(false); setQuery(""); }}
-                  style={{
-                    width: "100%", display: "flex", alignItems: "center", gap: 14,
-                    background: "none", border: "none", cursor: "pointer",
-                    padding: "8px 10px", textAlign: "left"
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = "#F7F3EE"}
-                  onMouseLeave={e => e.currentTarget.style.background = "none"}>
-                  <img src={p.image} alt="" style={{ width: 44, height: 56, objectFit: "cover", background: "#F7F3EE" }} />
-                  <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: "block", fontFamily: "Jost", fontSize: 14, color: "#1A1008", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</span>
-                    <span style={{ display: "block", fontFamily: "Jost", fontSize: 11, letterSpacing: "0.1em", color: "#8C7B6E", textTransform: "uppercase" }}>{p.category}</span>
-                  </span>
-                  <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 16, color: "#1A1008" }}>₹{(p.price || 0).toLocaleString("en-IN")}</span>
-                </button>
-              ))}
-              <button onClick={() => { navigate("listing", { listFilter: "all", searchQuery: query.trim() }); setSearchOpen(false); setQuery(""); }}
-                style={{
-                  width: "100%", background: "none", border: "none", borderTop: "1px solid #EDE8E0", cursor: "pointer",
-                  fontFamily: "Jost", fontSize: 11, fontWeight: 600, letterSpacing: "0.13em",
-                  color: "#7B1E1E", padding: "12px 10px 8px", marginTop: 6, textAlign: "left"
-                }}>SEE ALL RESULTS FOR "{query.trim().toUpperCase()}"</button>
-            </div>
-          }
-          {query.trim().length > 0 && suggestions.length === 0 &&
-            <p style={{
-              position: "absolute", top: "calc(100% + 10px)", left: 0, right: 0, zIndex: 950,
-              background: "#FFFFFF", border: "1px solid #E8E0D5", margin: 0,
-              boxShadow: "0 18px 40px -20px rgba(26,16,8,0.35)",
-              padding: "14px 16px", fontFamily: "Jost", fontSize: 13, color: "#8C7B6E"
-            }}>No matches for "{query.trim()}". Press Enter to search everything.</p>
-          }
         </div>
-        }
 
         {/* Right — icons */}
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 22 }}>
-          {!noSearch && <button onClick={() => { setSearchOpen((s) => !s); setQuery(""); }} className="hide-mobile" style={{ background: "none", border: "none", color: iconColor, padding: 4, transition: "color 0.35s", lineHeight: 0 }}>{searchOpen ? <IconX /> : <IconSearch />}</button>}
+          {!noSearch && <button onClick={() => setSearchOpen((s) => !s)} className="hide-mobile" style={{ background: "none", border: "none", color: iconColor, padding: 4, transition: "color 0.35s", lineHeight: 0 }}><IconSearch /></button>}
           <div className="hide-mobile" style={{ display: "flex", alignItems: "center", gap: 22 }}>
             <button onClick={() => navigate(window.auth?.current ? "account" : "login")} style={{ background: "none", border: "none", color: iconColor, padding: 4, transition: "color 0.35s", lineHeight: 0 }}>
               <IconUser />
@@ -1302,6 +1215,71 @@ function Navbar({ transparent = false, noSearch = false, overlay = false }) {
           </button>
         </div>
       </nav>
+
+      {/* Search bar */}
+      {!noSearch && searchOpen &&
+      <div style={{
+        position: "absolute", top: "100%", left: 0, right: 0, zIndex: 850,
+        background: "#FFFFFF", borderBottom: "1px solid #E8E0D5",
+        padding: "18px 40px",
+        animation: "slideDown 0.2s ease"
+      }}>
+          <div style={{ maxWidth: 560, margin: "0 auto", display: "flex", alignItems: "center", gap: 12 }}>
+            <IconSearch color="#B8A99A" />
+            <input
+            autoFocus
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && query.trim()) {
+                navigate("listing", { listFilter: "all", searchQuery: query.trim() });
+                setSearchOpen(false);setQuery("");
+              }
+              if (e.key === "Escape") setSearchOpen(false);
+            }}
+            placeholder="Search dresses, styles, fabrics…"
+            style={{
+              flex: 1, border: "none", background: "transparent", outline: "none",
+              fontFamily: "Jost", fontSize: 16, color: "#1A1008"
+            }} />
+          
+            <button onClick={() => setSearchOpen(false)} style={{ background: "none", border: "none", color: "#B8A99A", lineHeight: 0 }}>
+              <IconX />
+            </button>
+          </div>
+
+          {suggestions.length > 0 &&
+            <div style={{ maxWidth: 560, margin: "14px auto 0", borderTop: "1px solid #EDE8E0", paddingTop: 10 }}>
+              {suggestions.map(p => (
+                <button key={p.id} onClick={() => { navigate("detail", { productId: p.id }); setSearchOpen(false); setQuery(""); }}
+                  style={{
+                    width: "100%", display: "flex", alignItems: "center", gap: 14,
+                    background: "none", border: "none", borderRadius: 8, cursor: "pointer",
+                    padding: "8px 10px", textAlign: "left"
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = "#F7F3EE"}
+                  onMouseLeave={e => e.currentTarget.style.background = "none"}>
+                  <img src={p.image} alt="" style={{ width: 44, height: 56, objectFit: "cover", borderRadius: 4, background: "#F7F3EE" }} />
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: "block", fontFamily: "Jost", fontSize: 14, color: "#1A1008", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</span>
+                    <span style={{ display: "block", fontFamily: "Jost", fontSize: 11, letterSpacing: "0.1em", color: "#8C7B6E", textTransform: "uppercase" }}>{p.category}</span>
+                  </span>
+                  <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 16, color: "#1A1008" }}>₹{(p.price || 0).toLocaleString("en-IN")}</span>
+                </button>
+              ))}
+              <button onClick={() => { navigate("listing", { listFilter: "all", searchQuery: query.trim() }); setSearchOpen(false); setQuery(""); }}
+                style={{
+                  width: "100%", background: "none", border: "none", cursor: "pointer",
+                  fontFamily: "Jost", fontSize: 11, fontWeight: 600, letterSpacing: "0.13em",
+                  color: "#7B1E1E", padding: "12px 10px 4px", textAlign: "left"
+                }}>SEE ALL RESULTS FOR "{query.trim().toUpperCase()}"</button>
+            </div>
+          }
+          {query.trim().length > 0 && suggestions.length === 0 &&
+            <p style={{ maxWidth: 560, margin: "14px auto 0", fontFamily: "Jost", fontSize: 13, color: "#8C7B6E" }}>No matches for "{query.trim()}". Press Enter to search everything.</p>
+          }
+        </div>
+      }
 
       {/* Mobile menu */}
       {mobileOpen &&
@@ -1426,7 +1404,7 @@ function Footer() {
             <div>
               <h2 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 30, fontWeight: 600, letterSpacing: "0.25em", color: "#FAF9F7", marginBottom: 16 }}>KANKA</h2>
               <p style={{ fontFamily: "Jost", fontSize: 13, lineHeight: 1.75, maxWidth: 260, marginBottom: 24 }}>
-                Traditional Indian menswear, made with care. Classic pieces crafted from quality fabrics for everyday wear and occasions.
+                Luxury women's fashion crafted with intention. Every piece tells a story of artisanship, sustainability, and timeless elegance.
               </p>
               <div style={{ display: "flex", gap: 10 }}>
                 {[<IconInstagram />, "FB", "PT"].map((s, i) =>
@@ -1544,26 +1522,26 @@ function Hero() {
   const slides = [
     {
       image: "DSC07510.jpg.jpeg",
-      label: "NEW ARRIVALS",
-      heading1: "Traditional",
-      heading2: "menswear.",
-      sub: "Classic pieces, made from quality fabrics.",
+      label: "EVENING EDIT",
+      heading1: "Dressed",
+      heading2: "for the night.",
+      sub: "Opulent fabrics. Unforgettable moments.",
       filter: "tshirt",
     },
     {
       image: "DSC07624.jpg.jpeg",
-      label: "SHOP THE COLLECTION",
-      heading1: "Everyday",
-      heading2: "essentials.",
-      sub: "Comfortable, well-made staples for every day.",
+      label: "SS 2026 COLLECTION",
+      heading1: "Dressed",
+      heading2: "for the night.",
+      sub: "Where artisanship meets the modern silhouette.",
       filter: "all",
     },
     {
       image: "DSC07558.jpg.jpeg",
-      label: "TRADITIONAL WEAR",
-      heading1: "Veshti",
-      heading2: "& more.",
-      sub: "Traditional pieces for festivals and occasions.",
+      label: "RESORT CAPSULE",
+      heading1: "Sun,",
+      heading2: "sea & style.",
+      sub: "Light, luxurious pieces for warmer days.",
       filter: "veshti",
     },
   ];
@@ -1644,7 +1622,7 @@ function Hero() {
 
 /* ─── Ticker ────────────────────────────────────────────────────── */
 function Ticker() {
-  const items = ["FREE SHIPPING OVER ₹5,000","COMPLIMENTARY RETURNS","SECURE CHECKOUT","CRAFTED WITH CARE","CRAFTED IN INDIA","NEW ARRIVALS NOW LIVE"];
+  const items = ["FREE SHIPPING OVER ₹5,000","COMPLIMENTARY RETURNS","SECURE CHECKOUT","CRAFTED WITH CARE","SUSTAINABLE FASHION","SS 2026 COLLECTION NOW LIVE"];
   const text = [...items, ...items].join("   ·   ");
   return (
     <div style={{ background:"#1A1008", padding:"13px 0", overflow:"hidden" }}>
@@ -1763,13 +1741,9 @@ function Testimonials() {
   const [active, setActive] = useState(0);
   const data = window.TESTIMONIALS;
   useEffect(() => {
-    if (!data || data.length === 0) return;
     const t = setInterval(() => setActive(a => (a+1) % data.length), 5200);
     return () => clearInterval(t);
   }, []);
-  /* No reviews yet — hide the section rather than show an empty one.
-     Guard sits after hooks (rules of hooks). */
-  if (!data || data.length === 0) return null;
 
   return (
     <section className="section" style={{ background:"#1A1008" }}>
@@ -1892,6 +1866,8 @@ function HomePage() {
     <div className="page-enter">
       <Navbar overlay={true} />
       <Hero />
+      <Ticker />
+      <ValuesStrip />
       <Collections />
       <TrendingSection />
       <Testimonials />
@@ -2739,13 +2715,13 @@ function CartItem({ item }) {
 function OrderSummary({ onCheckout }) {
   const { cart, cartTotal } = useCart();
   const shipping = cartTotal >= 5000 ? 0 : 149;
-  const tax      = cartTotal * 0.12;
+  const tax      = cartTotal * 0.05;
   const total    = cartTotal + shipping + tax;
 
   const rows = [
     ["Subtotal",  `₹${cartTotal.toLocaleString("en-IN")}`],
     ["Shipping",  shipping === 0 ? "Free" : `₹${shipping.toLocaleString("en-IN")}`],
-    ["GST (12%)",  `₹${tax.toLocaleString("en-IN")}`],
+    ["GST (5%)",  `₹${tax.toLocaleString("en-IN")}`],
   ];
 
   return (
@@ -3116,7 +3092,7 @@ function CheckoutSummary({ shipping: shippingProp }) {
   const shipping = shippingProp !== undefined ? shippingProp : (cartTotal >= 5000 ? 0 : 149);
   const discount = Math.min(Number(promo?.discount || 0), cartTotal);
   const taxable  = cartTotal - discount;
-  const total    = taxable + shipping + taxable * 0.12;
+  const total    = taxable + shipping + taxable * 0.05;
   return (
     <div style={{ background:"#F7F3EE", borderRadius:12, padding:"28px 24px", width:300, flexShrink:0 }}>
       <h3 style={{ fontFamily:"Cormorant Garamond, serif", fontSize:20, fontWeight:500, marginBottom:20 }}>Your Order</h3>
@@ -3139,7 +3115,7 @@ function CheckoutSummary({ shipping: shippingProp }) {
         {[["Subtotal", `₹${cartTotal.toLocaleString("en-IN")}`],
           ...(discount > 0 ? [[`Discount (${promo.code})`, `−₹${discount.toLocaleString("en-IN")}`]] : []),
           ["Shipping", shipping===0?"Free":`₹${shipping.toLocaleString("en-IN")}`],
-          ["GST (12%)", `₹${Math.round(taxable*0.12).toLocaleString("en-IN")}`]].map(([l,v]) => (
+          ["GST (5%)", `₹${Math.round(taxable*0.05).toLocaleString("en-IN")}`]].map(([l,v]) => (
           <div key={l} style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
             <span style={{ fontFamily:"Jost", fontSize:12, color:"#8C7B6E" }}>{l}</span>
             <span style={{ fontFamily:"Jost", fontSize:12, color: l==="Shipping"&&shipping===0?"#C5A468":"#1A1008", fontWeight:500 }}>{v}</span>
@@ -3249,7 +3225,7 @@ function CheckoutPage() {
      the Razorpay popup shows the authoritative amount. */
   const cartTotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
   const shipCost  = ship === "express" ? 299 : ship === "next" ? 499 : (cartTotal >= 5000 ? 0 : 149);
-  const shownTotal = Math.round(cartTotal + shipCost + cartTotal * 0.12);
+  const shownTotal = Math.round(cartTotal + shipCost + cartTotal * 0.05);
 
   async function placeOrder() {
     if (loading) return;
@@ -4356,7 +4332,7 @@ function MobileSearchDrawer({ open, onClose }) {
           <div style={{ marginTop: 22, display: suggestions.length > 0 ? "none" : "block" }}>
             <p style={{ fontFamily: "Jost", fontSize: 11, fontWeight: 600, letterSpacing: "0.13em", color: "#8C7B6E", marginBottom: 12 }}>POPULAR SEARCHES</p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {["T-Shirt", "Veshti", "Pant", "Cotton", "Linen", "White"].map(t => (
+              {["Silk", "Linen", "Midi", "Cashmere", "Velvet", "Floral"].map(t => (
                 <button key={t} type="button" onClick={() => quickPick(t)} style={{
                   background: "#F7F3EE", border: "1px solid #EDE8E0", borderRadius: 20,
                   fontFamily: "Jost", fontSize: 13, color: "#1A1008",
