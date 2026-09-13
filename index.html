@@ -86,10 +86,12 @@
       .hide-desktop { display: flex !important; }
     }
     @media (max-width: 480px) {
-      .kk-navbar-logo { height: 54px !important; }
+      .kk-navbar-logo { height: 38px !important; }
     }
     @media (max-width: 768px) {
-      .kk-navbar-logo-btn { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+      .kk-navbar-lockup { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); flex-direction: column !important; gap: 2px !important; }
+      .kk-navbar-est { margin-left: 0 !important; font-size: 9px !important; letter-spacing: 0.28em !important; }
+      .kk-navbar-lockup .kk-navbar-logo { height: 38px !important; width: 52px !important; }
       .kk-navbar-hamburger { margin-left: -8px; }
       /* 2c — pill navbar on phones (home hero only) */
       .kk-navbar-head--overlay { margin-bottom: -89px !important; }
@@ -1173,6 +1175,7 @@ function Navbar({ transparent = false, noSearch = false, overlay = false }) {
       }}>
         {/* Left — logo */}
         <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+          <div className="kk-navbar-lockup" style={{ display: "flex", alignItems: "center" }}>
           <button className="kk-navbar-logo-btn" onClick={() => navigate("home")} style={{
             background: "none", border: "none", cursor: "pointer", padding: 0,
             lineHeight: 0, transition: "opacity 0.35s", flexShrink: 0
@@ -1181,6 +1184,13 @@ function Navbar({ transparent = false, noSearch = false, overlay = false }) {
               height: 48, width: 65, objectFit: "contain", display: "block"
             }} />
           </button>
+          <span className="kk-navbar-est" style={{
+            marginLeft: 14,
+            fontFamily: "'Cormorant Garamond', serif", fontSize: 11, letterSpacing: "0.22em",
+            textTransform: "uppercase", color: iconColor, whiteSpace: "nowrap",
+            transition: "color 0.35s"
+          }}>Since 2015</span>
+          </div>
         </div>
 
         {/* Center — nav links, or the inline search field when open */}
@@ -1882,8 +1892,6 @@ function HomePage() {
     <div className="page-enter">
       <Navbar overlay={true} />
       <Hero />
-      <Ticker />
-      <ValuesStrip />
       <Collections />
       <TrendingSection />
       <Testimonials />
