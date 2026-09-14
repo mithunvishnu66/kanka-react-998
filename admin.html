@@ -420,17 +420,18 @@ async function loadProducts() {
    the product cards and the editor dropdown all follow. Keep the keys in
    sync with products.category in Supabase and with window.CATEGORIES in
    index.html (the storefront). */
-const CATEGORY_LABELS = { tshirt:"T-Shirt", veshti:"Veshti", pant:"Pant" };
+const CATEGORY_LABELS = { kurta:"Kurthas", dhoti:"Dhoti Pants", tshirt:"T-Shirt" };
 const CATEGORY_KEYS = Object.keys(CATEGORY_LABELS);
 const DEFAULT_CATEGORY = CATEGORY_KEYS[0];
 
 /* Line-art silhouette per category — lets the client recognise the option
-   by shape before reading it. The veshti's lower band echoes the woven
-   gold border the real garment has. */
+   by shape before reading it. The kurtha is drawn long with side slits and
+   a centre placket; the dhoti pant is drawn wider and pleated so it reads
+   as distinct from a plain trouser at 18px. */
 const CATEGORY_ICONS = {
+  kurta:  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M8.8 3.5 4.6 5.6 3.2 9.1l2.4 1.3 1-1.3V20.5h10.8V9.1l1 1.3 2.4-1.3-1.4-3.5-4.2-2.1Z"/><path d="M8.8 3.5h6.4" stroke-width="1.2"/><path d="M12 5.4v6.2M7.6 17.4v3.1M16.4 17.4v3.1" stroke-width="1.1" opacity=".5"/></svg>`,
+  dhoti:  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M5.4 3.5h13.2l1.2 17h-5.3L12 11.8l-2.5 8.7H4.2Z"/><path d="M5.4 7.1h13.2" stroke-width="1.2"/><path d="M9.6 7.6v3.4M12 7.6v3.9M14.4 7.6v3.4" stroke-width="1.1" opacity=".5"/></svg>`,
   tshirt: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M8.5 3.5 4 6 2.5 9.2l2.6 1.5 1.2-1.4V20.5h11.4V9.3l1.2 1.4 2.6-1.5L20 6l-4.5-2.5a3.6 3.6 0 0 1-7 0Z"/></svg>`,
-  veshti: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M6 3.5h12l2.2 17H3.8Z"/><path d="M9.4 7.5v13M12 7v13.5M14.6 7.5v13" stroke-width="1.1" opacity=".5"/><path d="M4.05 17.2h15.9" stroke-width="1.2"/></svg>`,
-  pant:   `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M6.6 3.5h10.8l1.1 17h-4.6L12 11.4l-1.9 9.1H5.5Z"/><path d="M6.6 7.2h10.8" stroke-width="1.1" opacity=".5"/></svg>`,
 };
 
 const ICON_CHEVRON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>`;
