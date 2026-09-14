@@ -256,7 +256,6 @@
     </header>
 
     <!-- SCREEN CONTAINERS -->
-    <div id="screen-dashboard" style="display:none;"></div>
     <div id="screen-orders"    style="display:none;"></div>
     <div id="screen-customers" style="display:none;"></div>
     <div id="screen-products"  style="display:none;"></div>
@@ -582,7 +581,6 @@ function render() {
 
   // titles
   const titles = {
-    dashboard: ["Good morning, Kanka", "Sunday, 22 June 2026 — here's the studio today."],
     orders:    ["Orders", "Track fulfillment and update delivery status."],
     customers: ["Customers", CUSTOMERS.length + " people have an account."],
     products:  ["Products", PRODUCTS.length + " styles in the current collection."],
@@ -594,7 +592,6 @@ function render() {
   // sidebar nav
   const pending = ORDERS.filter(o => o.status==="pending").length;
   const navList = [
-    {id:"dashboard", label:"Dashboard"},
     {id:"orders",    label:"Orders",    badge: pending||""},
     {id:"customers", label:"Customers"},
     {id:"products",  label:"Products"},
@@ -614,7 +611,7 @@ function render() {
   });
 
   // screens
-  ["dashboard","orders","customers","products"].forEach(s => {
+  ["orders","customers","products"].forEach(s => {
     const el2 = $(`#screen-${s}`);
     el2.style.display = screen===s ? "block" : "none";
     el2.innerHTML = "";
@@ -629,112 +626,9 @@ function render() {
 
 function renderScreen(screen, wrap) {
   const q = state.search.trim().toLowerCase();
-  if (screen==="dashboard") renderDash(wrap);
   if (screen==="orders")    renderOrders(wrap, q);
   if (screen==="customers") renderCustomers(wrap, q);
   if (screen==="products")  renderProducts(wrap, q);
-}
-
-// ── DASHBOARD ──
-function renderDash(wrap) {
-  const allTotals = ORDERS.map(orderTotal);
-  const monthSales = allTotals.reduce((a,b)=>a+b,0);
-  const stats = [
-    {label:"TODAY'S SALES", value:money(376),   sub:"2 orders today",  delta:"+18%", dc:"#3B6B2A", bar:"#C5A468"},
-    {label:"MONTH REVENUE", value:money(monthSales), sub:"June so far", delta:"+12%",dc:"#3B6B2A", bar:"#6E7359"},
-    {label:"OPEN ORDERS",   value:String(ORDERS.filter(o=>["pending","paid","packed"].includes(o.status)).length), sub:"awaiting action", delta:"live", dc:"#9A7B2E", bar:"#9C6B4A"},
-    {label:"CUSTOMERS",     value:String(CUSTOMERS.length-1), sub:"registered", delta:"+3 new", dc:"#3B6B2A", bar:"#5E6E78"},
-  ];
-
-  // stat grid
-  const sg = el("div", {style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"16px",marginBottom:"22px"}});
-  sg.className = "stat-grid";
-  stats.forEach(s => {
-    const card = el("div"); card.className = "stat-card";
-    card.innerHTML = `
-      <div class="stat-bar" style="background:${s.bar};"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
-        <p style="font-family:'Jost';font-size:10px;font-weight:600;letter-spacing:0.13em;color:#9A8978;">${s.label}</p>
-        <span style="font-family:'Jost';font-size:11px;font-weight:600;color:${s.dc};">${s.delta}</span>
-      </div>
-      <p style="font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:600;color:#1A1008;line-height:0.95;">${s.value}</p>
-      <p style="font-family:'Jost';font-size:11.5px;color:#9A8978;margin-top:6px;">${s.sub}</p>`;
-    sg.appendChild(card);
-  });
-  wrap.appendChild(sg);
-
-  // 2-col
-  const dc = el("div",{style:{display:"grid",gridTemplateColumns:"1.55fr 1fr",gap:"16px"}});
-  dc.className = "dash-cols";
-
-  // chart
-  const days=[["Wed",290],["Thu",170],["Fri",420],["Sat",640],["Sun",380],["Mon",210],["Tue",376]];
-  const maxV = Math.max(...days.map(d=>d[1]));
-  const weekTotal = money(days.reduce((a,d)=>a+d[1],0));
-  const chartCard = el("div",{style:{background:"#FBF8F3",border:"1px solid #EAE1D4",borderRadius:"14px",padding:"24px"}});
-  chartCard.innerHTML = `
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px;">
-      <div>
-        <p style="font-family:'Jost';font-size:10.5px;font-weight:600;letter-spacing:0.13em;color:#9A8978;margin-bottom:7px;">REVENUE · LAST 7 DAYS</p>
-        <p style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;color:#1A1008;line-height:1;">${weekTotal}</p>
-      </div>
-      <span style="font-family:'Jost';font-size:11px;font-weight:500;color:#3B6B2A;background:#E7EFDF;padding:5px 11px;border-radius:999px;">+12% vs last week</span>
-    </div>
-    <div style="display:flex;align-items:flex-end;gap:10px;height:160px;">
-      ${days.map((d,i) => `
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:9px;height:100%;justify-content:flex-end;">
-          <span style="font-family:'Jost';font-size:10px;color:#A89684;">$${d[1]}</span>
-          <div class="chart-bar" style="width:100%;max-width:34px;height:${Math.round((d[1]/maxV)*130)}px;background:${i===days.length-1?"#C5A468":"#D8CDBD"};border-radius:6px 6px 0 0;"></div>
-          <span style="font-family:'Jost';font-size:10.5px;font-weight:500;color:#9A8978;">${d[0]}</span>
-        </div>`).join("")}
-    </div>`;
-  dc.appendChild(chartCard);
-
-  // low stock
-  const low = PRODUCTS.filter(p=>p.stock<=5).sort((a,b)=>a.stock-b.stock).slice(0,5);
-  const lowCard = el("div",{style:{background:"#1A1008",borderRadius:"14px",padding:"24px",color:"#FAF9F7"}});
-  lowCard.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
-      <p style="font-family:'Jost';font-size:10.5px;font-weight:600;letter-spacing:0.13em;color:#C5A468;">NEEDS RESTOCK</p>
-      <span style="font-family:'Jost';font-size:11px;color:rgba(250,249,247,0.5);">${low.length} items</span>
-    </div>
-    <div>${low.map(p => {
-      const sold=p.stock===0,draft=p.stock<0;
-      const sl=draft?"Draft":sold?"Sold out":p.stock+" left";
-      const sc=draft?"rgba(250,249,247,0.5)":sold?"#E8A0A0":"#C5A468";
-      return `<div style="display:flex;align-items:center;gap:13px;padding:11px 0;border-bottom:1px solid rgba(250,249,247,0.08);">
-        <div style="width:34px;height:34px;border-radius:8px;flex-shrink:0;background:${p.swatch};"></div>
-        <div style="flex:1;min-width:0;">
-          <p style="font-family:'Jost';font-size:13px;color:#FAF9F7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</p>
-          <p style="font-family:'Jost';font-size:11px;color:rgba(250,249,247,0.45);">${p.cat}</p>
-        </div>
-        <span style="font-family:'Jost';font-size:11px;font-weight:600;color:${sc};">${sl}</span>
-      </div>`;
-    }).join("")}</div>`;
-  dc.appendChild(lowCard);
-  wrap.appendChild(dc);
-
-  // recent orders
-  const ro = el("div",{style:{background:"#FBF8F3",border:"1px solid #EAE1D4",borderRadius:"14px",padding:"24px",marginTop:"16px"}});
-  const roHead = el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"6px"}});
-  roHead.innerHTML = `<p style="font-family:'Jost';font-size:10.5px;font-weight:600;letter-spacing:0.13em;color:#1A1008;">RECENT ORDERS</p>`;
-  const vaBtn = el("button",{style:{fontFamily:"Jost",fontSize:"12px",fontWeight:"500",color:"#C5A468",background:"none",border:"none"},onclick:()=>goTo("orders")}, "View all →");
-  roHead.appendChild(vaBtn);
-  ro.appendChild(roHead);
-  ORDERS.slice(0,5).forEach(o => {
-    const row = el("div");
-    row.className = "table-row";
-    row.style.paddingLeft = "6px"; row.style.paddingRight = "6px";
-    row.innerHTML = `
-      <span style="font-family:'Jost';font-size:13px;font-weight:600;color:#1A1008;width:96px;flex-shrink:0;">${esc(o.number)}</span>
-      <span style="font-family:'Jost';font-size:13px;color:#6B5744;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(o.name)}</span>
-      <span class="hide-mobile" style="font-family:'Jost';font-size:12.5px;color:#9A8978;width:110px;flex-shrink:0;">${o.date}</span>`;
-    row.appendChild(badge(o.status));
-    row.innerHTML += `<span style="font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;color:#1A1008;width:78px;text-align:right;flex-shrink:0;">${money(orderTotal(o))}</span>`;
-    row.addEventListener("click", () => openOrder(o.id));
-    ro.appendChild(row);
-  });
-  wrap.appendChild(ro);
 }
 
 // ── ORDERS ──
@@ -1473,7 +1367,7 @@ async function attemptLogin() {
   try {
     await adminAuth.login(email, pw);
     await Promise.all([loadProducts(), loadOrders()]);
-    goTo("dashboard");
+    goTo("products");
   } catch (err) {
     errEl.textContent = err.message || "Couldn't sign in.";
     errEl.style.display = "block";
@@ -1518,7 +1412,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Resume an existing admin session if we still have one, else show login
   if (adminAuth.current) {
     await Promise.all([loadProducts(), loadOrders()]);
-    state.screen = productsLoadError ? "login" : "dashboard";
+    state.screen = productsLoadError ? "login" : "products";
     if (productsLoadError) { await adminAuth.logout(); }
   } else {
     state.screen = "login";
