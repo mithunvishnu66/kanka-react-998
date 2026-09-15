@@ -443,15 +443,15 @@ window.SUPABASE_KEY = SUPABASE_KEY;
 
 /* ─── STATIC: COLLECTIONS ───────────────────────────────────────────── */
 window.COLLECTIONS = [
-  { id:1, title:"T-Shirts", subtitle:"Everyday comfort",
+  { id:1, title:"Kurthas", subtitle:"Traditional wear",
+    image:"https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&h=1000&auto=format&fit=crop&q=80",
+    cta:"Shop Kurthas", filter:"kurta" },
+  { id:2, title:"Dhoti Pants", subtitle:"Everyday elegance",
+    image:"https://images.unsplash.com/photo-1483985988-d65a12952491?w=800&h=1000&auto=format&fit=crop&q=80",
+    cta:"Shop Dhoti Pants", filter:"dhoti" },
+  { id:3, title:"T-Shirts", subtitle:"Everyday comfort",
     image:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=1000&auto=format&fit=crop&q=80",
     cta:"Shop T-Shirts", filter:"tshirt" },
-  { id:2, title:"Veshti", subtitle:"Traditional wear",
-    image:"https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&h=1000&auto=format&fit=crop&q=80",
-    cta:"Shop Veshti", filter:"veshti" },
-  { id:3, title:"Pants", subtitle:"Smart & casual",
-    image:"https://images.unsplash.com/photo-1483985988-d65a12952491?w=800&h=1000&auto=format&fit=crop&q=80",
-    cta:"Shop Pants", filter:"pant" },
 ];
 
 /* ─── STATIC: TESTIMONIALS ──────────────────────────────────────────── */
@@ -538,9 +538,9 @@ window.loadKankaData = async function loadKankaData() {
   window.PRODUCTS.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
   window.CATEGORIES = [
     { id:"all",    label:"All Products", count: counts.all    || 0 },
+    { id:"kurta",  label:"Kurthas",      count: counts.kurta  || 0 },
+    { id:"dhoti",  label:"Dhoti Pants",  count: counts.dhoti  || 0 },
     { id:"tshirt", label:"T-Shirt",      count: counts.tshirt || 0 },
-    { id:"veshti", label:"Veshti",       count: counts.veshti || 0 },
-    { id:"pant",   label:"Pant",         count: counts.pant   || 0 },
   ];
 
   console.log(`[Kanka] ✓ Loaded ${window.PRODUCTS.length} products from Supabase`);
@@ -1185,7 +1185,8 @@ function Navbar({ transparent = false, noSearch = false, overlay = false }) {
             }} />
           </button>
           <span className="kk-navbar-est" style={{
-            marginLeft: 14,
+            marginLeft: 14, marginRight: "-0.22em", display: "block", lineHeight: 1,
+            position: "relative", top: 1,
             fontFamily: "'Cormorant Garamond', serif", fontSize: 11, letterSpacing: "0.22em",
             textTransform: "uppercase", color: iconColor, whiteSpace: "nowrap",
             transition: "color 0.35s"
@@ -1373,7 +1374,7 @@ function Footer() {
   const [signed, setSigned] = useState(false);
 
   const cols = [
-  { title: "SHOP", links: ["New Arrivals", "T-Shirts", "Veshti", "Pants", "Sale"] },
+  { title: "SHOP", links: ["New Arrivals", "Kurthas", "Dhoti Pants", "T-Shirts", "Sale"] },
   { title: "HELP", links: ["Size Guide", "Shipping", "Returns", "Care Guide", "FAQ"] },
   { title: "COMPANY", links: ["About", "Sustainability", "Careers", "Press", "Contact"] }];
 
@@ -1561,10 +1562,10 @@ function Hero() {
     {
       image: "DSC07558.jpg.jpeg",
       label: "TRADITIONAL WEAR",
-      heading1: "Veshti",
+      heading1: "Kurthas",
       heading2: "& more.",
       sub: "Traditional pieces for festivals and occasions.",
-      filter: "veshti",
+      filter: "kurta",
     },
   ];
 
@@ -4356,7 +4357,7 @@ function MobileSearchDrawer({ open, onClose }) {
           <div style={{ marginTop: 22, display: suggestions.length > 0 ? "none" : "block" }}>
             <p style={{ fontFamily: "Jost", fontSize: 11, fontWeight: 600, letterSpacing: "0.13em", color: "#8C7B6E", marginBottom: 12 }}>POPULAR SEARCHES</p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {["T-Shirt", "Veshti", "Pant", "Cotton", "Linen", "White"].map(t => (
+              {["Kurthas", "Dhoti Pants", "T-Shirt", "Cotton", "Linen", "White"].map(t => (
                 <button key={t} type="button" onClick={() => quickPick(t)} style={{
                   background: "#F7F3EE", border: "1px solid #EDE8E0", borderRadius: 20,
                   fontFamily: "Jost", fontSize: 13, color: "#1A1008",
