@@ -443,15 +443,15 @@ window.SUPABASE_KEY = SUPABASE_KEY;
 
 /* ─── STATIC: COLLECTIONS ───────────────────────────────────────────── */
 window.COLLECTIONS = [
-  { id:1, title:"Kurthas", subtitle:"Traditional wear",
-    image:"https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&h=1000&auto=format&fit=crop&q=80",
-    cta:"Shop Kurthas", filter:"kurta" },
-  { id:2, title:"Dhoti Pants", subtitle:"Everyday elegance",
-    image:"https://images.unsplash.com/photo-1483985988-d65a12952491?w=800&h=1000&auto=format&fit=crop&q=80",
-    cta:"Shop Dhoti Pants", filter:"dhoti" },
-  { id:3, title:"T-Shirts", subtitle:"Everyday comfort",
+  { id:1, title:"T-Shirts", subtitle:"Everyday comfort",
     image:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=1000&auto=format&fit=crop&q=80",
     cta:"Shop T-Shirts", filter:"tshirt" },
+  { id:2, title:"Veshti", subtitle:"Traditional wear",
+    image:"https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&h=1000&auto=format&fit=crop&q=80",
+    cta:"Shop Veshti", filter:"veshti" },
+  { id:3, title:"Pants", subtitle:"Smart & casual",
+    image:"https://images.unsplash.com/photo-1483985988-d65a12952491?w=800&h=1000&auto=format&fit=crop&q=80",
+    cta:"Shop Pants", filter:"pant" },
 ];
 
 /* ─── STATIC: TESTIMONIALS ──────────────────────────────────────────── */
@@ -538,9 +538,9 @@ window.loadKankaData = async function loadKankaData() {
   window.PRODUCTS.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
   window.CATEGORIES = [
     { id:"all",    label:"All Products", count: counts.all    || 0 },
-    { id:"kurta",  label:"Kurthas",      count: counts.kurta  || 0 },
-    { id:"dhoti",  label:"Dhoti Pants",  count: counts.dhoti  || 0 },
     { id:"tshirt", label:"T-Shirt",      count: counts.tshirt || 0 },
+    { id:"veshti", label:"Veshti",       count: counts.veshti || 0 },
+    { id:"pant",   label:"Pant",         count: counts.pant   || 0 },
   ];
 
   console.log(`[Kanka] ✓ Loaded ${window.PRODUCTS.length} products from Supabase`);
@@ -997,8 +997,10 @@ function ProductCard({ product }) {
 
   function handleAdd(e) {
     e.stopPropagation();
+    /* Use the product's first REAL size, not a hardcoded "S". */
+    const firstSize = (product.sizes && product.sizes[0]) || "M";
     addToCart({ id: product.id, name: product.name, price: product.price,
-      image: product.image, color: product.colors[0].name, size: "S", quantity: 1 });
+      image: product.image, color: product.colors[0].name, size: firstSize, quantity: 1 });
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   }
@@ -1185,8 +1187,7 @@ function Navbar({ transparent = false, noSearch = false, overlay = false }) {
             }} />
           </button>
           <span className="kk-navbar-est" style={{
-            marginLeft: 14, marginRight: "-0.22em", display: "block", lineHeight: 1,
-            position: "relative", top: 1,
+            marginLeft: 14,
             fontFamily: "'Cormorant Garamond', serif", fontSize: 11, letterSpacing: "0.22em",
             textTransform: "uppercase", color: iconColor, whiteSpace: "nowrap",
             transition: "color 0.35s"
@@ -1374,7 +1375,7 @@ function Footer() {
   const [signed, setSigned] = useState(false);
 
   const cols = [
-  { title: "SHOP", links: ["New Arrivals", "Kurthas", "Dhoti Pants", "T-Shirts", "Sale"] },
+  { title: "SHOP", links: ["New Arrivals", "T-Shirts", "Veshti", "Pants", "Sale"] },
   { title: "HELP", links: ["Size Guide", "Shipping", "Returns", "Care Guide", "FAQ"] },
   { title: "COMPANY", links: ["About", "Sustainability", "Careers", "Press", "Contact"] }];
 
@@ -1562,10 +1563,10 @@ function Hero() {
     {
       image: "DSC07558.jpg.jpeg",
       label: "TRADITIONAL WEAR",
-      heading1: "Kurthas",
+      heading1: "Veshti",
       heading2: "& more.",
       sub: "Traditional pieces for festivals and occasions.",
-      filter: "kurta",
+      filter: "veshti",
     },
   ];
 
@@ -2514,7 +2515,7 @@ function ProductInfo({ product, onAddedChange }) {
 
       {/* Trust badges */}
       <div style={{ display:"flex", gap:20, marginBottom:28, flexWrap:"wrap" }}>
-        {[["↩","Free 30-day returns"],["🔒","Secure checkout"],["✈","Free shipping ₹5,000+"]].map(([icon,label],i) => (
+        {[["↩","Free 30-day returns"],["🔒","Secure checkout"],["✈","Free shipping"]].map(([icon,label],i) => (
           <div key={i} style={{ display:"flex", alignItems:"center", gap:6 }}>
             <span style={{ fontSize:14 }}>{icon}</span>
             <span style={{ fontFamily:"Jost", fontSize:11, color:"#8C7B6E" }}>{label}</span>
@@ -2739,7 +2740,7 @@ function CartItem({ item }) {
 
 function OrderSummary({ onCheckout }) {
   const { cart, cartTotal } = useCart();
-  const shipping = cartTotal >= 5000 ? 0 : 149;
+  const shipping = 0;  /* free shipping on all orders */
   const tax      = cartTotal * 0.05;
   const total    = cartTotal + shipping + tax;
 
@@ -2758,7 +2759,7 @@ function OrderSummary({ onCheckout }) {
           <span style={{ fontFamily:"Jost", fontSize:13, color: label==="Shipping" && shipping===0 ? "#C5A468" : "#1A1008", fontWeight:500 }}>{val}</span>
         </div>
       ))}
-      {cartTotal < 5000 && (
+      {false && (   /* free shipping always — nudge no longer applies */
         <p style={{ fontFamily:"Jost", fontSize:11, color:"#C5A468", marginBottom:12, background:"#FDF5E8", padding:"8px 12px", borderRadius:6 }}>
           Add ₹{(5000-cartTotal).toLocaleString("en-IN")} more for free shipping
         </p>
@@ -3011,13 +3012,11 @@ function StepInfo({ data, setData, onNext }) {
 /* ─── Step 2: Shipping ──────────────────────────────────────────── */
 function StepShipping({ selected, setSelected, onNext, onBack }) {
   const opts = [
-    { id:"standard", label:"Standard Shipping", sub:"3–5 business days", price: "Free",   note:"On orders over ₹5,000" },
-    { id:"express",  label:"Express Shipping",  sub:"1–2 business days", price: "₹299",   note:"Tracked delivery" },
-    { id:"next",     label:"Next Day Delivery", sub:"Tomorrow by 9pm",   price: "₹499",   note:"Order before 2pm" },
+    { id:"standard", label:"Free Shipping", sub:"Delivered in 3–7 business days", price: "Free", note:"On all orders" },
   ];
   return (
     <div>
-      <h2 style={{ fontFamily:"Cormorant Garamond, serif", fontSize:26, fontWeight:500, color:"#1A1008", marginBottom:24 }}>Shipping Method</h2>
+      <h2 style={{ fontFamily:"Cormorant Garamond, serif", fontSize:26, fontWeight:500, color:"#1A1008", marginBottom:24 }}>Shipping</h2>
       <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:32 }}>
         {opts.map(o => (
           <button key={o.id} onClick={() => setSelected(o.id)} style={{
@@ -3114,7 +3113,7 @@ function CheckoutSummary({ shipping: shippingProp }) {
   const [promo] = useState(() => {
     try { return JSON.parse(localStorage.getItem("kanka_discount") || "null"); } catch { return null; }
   });
-  const shipping = shippingProp !== undefined ? shippingProp : (cartTotal >= 5000 ? 0 : 149);
+  const shipping = 0;  /* free shipping on all orders */
   const discount = Math.min(Number(promo?.discount || 0), cartTotal);
   const taxable  = cartTotal - discount;
   const total    = taxable + shipping + taxable * 0.05;
@@ -3249,7 +3248,7 @@ function CheckoutPage() {
   /* Displayed total — indicative only. The server recomputes it and
      the Razorpay popup shows the authoritative amount. */
   const cartTotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
-  const shipCost  = ship === "express" ? 299 : ship === "next" ? 499 : (cartTotal >= 5000 ? 0 : 149);
+  const shipCost  = 0;  /* free shipping on all orders */
   const shownTotal = Math.round(cartTotal + shipCost + cartTotal * 0.05);
 
   async function placeOrder() {
@@ -4357,7 +4356,7 @@ function MobileSearchDrawer({ open, onClose }) {
           <div style={{ marginTop: 22, display: suggestions.length > 0 ? "none" : "block" }}>
             <p style={{ fontFamily: "Jost", fontSize: 11, fontWeight: 600, letterSpacing: "0.13em", color: "#8C7B6E", marginBottom: 12 }}>POPULAR SEARCHES</p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {["Kurthas", "Dhoti Pants", "T-Shirt", "Cotton", "Linen", "White"].map(t => (
+              {["T-Shirt", "Veshti", "Pant", "Cotton", "Linen", "White"].map(t => (
                 <button key={t} type="button" onClick={() => quickPick(t)} style={{
                   background: "#F7F3EE", border: "1px solid #EDE8E0", borderRadius: 20,
                   fontFamily: "Jost", fontSize: 13, color: "#1A1008",
