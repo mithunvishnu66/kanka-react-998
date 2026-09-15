@@ -194,12 +194,10 @@ export async function buildQuote({ items: rawItems, discountCode, shippingMethod
   const discount = await validateDiscount(discountCode, subtotalPaise);
   const discountedPaise = subtotalPaise - discount.discountPaise;
 
-  const method = PRICING.SHIPPING[shippingMethod] ? shippingMethod : "standard";
-  const rule   = PRICING.SHIPPING[method];
-  const shippingPaise =
-    rule.freeOver !== null && discountedPaise >= toPaise(rule.freeOver)
-      ? 0
-      : toPaise(rule.price);
+  /* Shipping is free on all orders — the method selector was removed.
+     Whatever the browser sends for shippingMethod is ignored; the server
+     charges nothing. */
+  const shippingPaise = 0;
 
   /* GST is charged on the discounted goods value, not on shipping. */
   const taxPaise   = Math.round(discountedPaise * PRICING.GST_RATE);
@@ -214,8 +212,8 @@ export async function buildQuote({ items: rawItems, discountCode, shippingMethod
     subtotalPaise,
     discountPaise: discount.discountPaise,
     discountCode:  discount.discountPaise > 0 ? discount.code : null,
-    shippingMethod: method,
-    shippingLabel:  rule.label,
+    shippingMethod: "free",
+    shippingLabel:  "Free Shipping",
     shippingPaise,
     taxPaise,
     totalPaise,
