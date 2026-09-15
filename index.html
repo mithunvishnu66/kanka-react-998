@@ -443,15 +443,15 @@ window.SUPABASE_KEY = SUPABASE_KEY;
 
 /* ─── STATIC: COLLECTIONS ───────────────────────────────────────────── */
 window.COLLECTIONS = [
-  { id:1, title:"T-Shirts", subtitle:"Everyday comfort",
+  { id:1, title:"Kurtas", subtitle:"Traditional & festive",
     image:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=1000&auto=format&fit=crop&q=80",
-    cta:"Shop T-Shirts", filter:"tshirt" },
-  { id:2, title:"Veshti", subtitle:"Traditional wear",
+    cta:"Shop Kurtas", filter:"kurta" },
+  { id:2, title:"T-Shirts", subtitle:"Everyday comfort",
     image:"https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&h=1000&auto=format&fit=crop&q=80",
-    cta:"Shop Veshti", filter:"veshti" },
-  { id:3, title:"Pants", subtitle:"Smart & casual",
+    cta:"Shop T-Shirts", filter:"tshirt" },
+  { id:3, title:"Dhoti Pants", subtitle:"Classic & smart",
     image:"https://images.unsplash.com/photo-1483985988-d65a12952491?w=800&h=1000&auto=format&fit=crop&q=80",
-    cta:"Shop Pants", filter:"pant" },
+    cta:"Shop Dhoti Pants", filter:"dhoti" },
 ];
 
 /* ─── STATIC: TESTIMONIALS ──────────────────────────────────────────── */
@@ -538,9 +538,9 @@ window.loadKankaData = async function loadKankaData() {
   window.PRODUCTS.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
   window.CATEGORIES = [
     { id:"all",    label:"All Products", count: counts.all    || 0 },
-    { id:"tshirt", label:"T-Shirt",      count: counts.tshirt || 0 },
-    { id:"veshti", label:"Veshti",       count: counts.veshti || 0 },
-    { id:"pant",   label:"Pant",         count: counts.pant   || 0 },
+    { id:"kurta",  label:"Kurta",       count: counts.kurta  || 0 },
+    { id:"tshirt", label:"T-Shirt",     count: counts.tshirt || 0 },
+    { id:"dhoti",  label:"Dhoti Pant",  count: counts.dhoti  || 0 },
   ];
 
   console.log(`[Kanka] ✓ Loaded ${window.PRODUCTS.length} products from Supabase`);
@@ -1375,7 +1375,7 @@ function Footer() {
   const [signed, setSigned] = useState(false);
 
   const cols = [
-  { title: "SHOP", links: ["New Arrivals", "T-Shirts", "Veshti", "Pants", "Sale"] },
+  { title: "SHOP", links: ["New Arrivals", "Kurtas", "T-Shirts", "Dhoti Pants", "Sale"] },
   { title: "HELP", links: ["Size Guide", "Shipping", "Returns", "Care Guide", "FAQ"] },
   { title: "COMPANY", links: ["About", "Sustainability", "Careers", "Press", "Contact"] }];
 
@@ -1563,10 +1563,10 @@ function Hero() {
     {
       image: "DSC07558.jpg.jpeg",
       label: "TRADITIONAL WEAR",
-      heading1: "Veshti",
-      heading2: "& more.",
+      heading1: "Kurtas,",
+      heading2: "dhoti & more.",
       sub: "Traditional pieces for festivals and occasions.",
-      filter: "veshti",
+      filter: "dhoti",
     },
   ];
 
@@ -4356,7 +4356,7 @@ function MobileSearchDrawer({ open, onClose }) {
           <div style={{ marginTop: 22, display: suggestions.length > 0 ? "none" : "block" }}>
             <p style={{ fontFamily: "Jost", fontSize: 11, fontWeight: 600, letterSpacing: "0.13em", color: "#8C7B6E", marginBottom: 12 }}>POPULAR SEARCHES</p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {["T-Shirt", "Veshti", "Pant", "Cotton", "Linen", "White"].map(t => (
+              {["Kurta", "T-Shirt", "Dhoti", "Cotton", "Linen", "White"].map(t => (
                 <button key={t} type="button" onClick={() => quickPick(t)} style={{
                   background: "#F7F3EE", border: "1px solid #EDE8E0", borderRadius: 20,
                   fontFamily: "Jost", fontSize: 13, color: "#1A1008",
