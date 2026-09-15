@@ -256,7 +256,6 @@
     </header>
 
     <!-- SCREEN CONTAINERS -->
-    <div id="screen-dashboard" style="display:none;"></div>
     <div id="screen-orders"    style="display:none;"></div>
     <div id="screen-customers" style="display:none;"></div>
     <div id="screen-products"  style="display:none;"></div>
@@ -601,7 +600,6 @@ function render() {
   // sidebar nav
   const pending = ORDERS.filter(o => o.status==="pending").length;
   const navList = [
-    {id:"dashboard", label:"Dashboard"},
     {id:"orders",    label:"Orders",    badge: pending||""},
     {id:"customers", label:"Customers"},
     {id:"products",  label:"Products"},
@@ -621,7 +619,7 @@ function render() {
   });
 
   // screens
-  ["dashboard","orders","customers","products"].forEach(s => {
+  ["orders","customers","products"].forEach(s => {
     const el2 = $(`#screen-${s}`);
     el2.style.display = screen===s ? "block" : "none";
     el2.innerHTML = "";
@@ -636,7 +634,6 @@ function render() {
 
 function renderScreen(screen, wrap) {
   const q = state.search.trim().toLowerCase();
-  if (screen==="dashboard") renderDash(wrap);
   if (screen==="orders")    renderOrders(wrap, q);
   if (screen==="customers") renderCustomers(wrap, q);
   if (screen==="products")  renderProducts(wrap, q);
@@ -1480,7 +1477,7 @@ async function attemptLogin() {
   try {
     await adminAuth.login(email, pw);
     await Promise.all([loadProducts(), loadOrders()]);
-    goTo("dashboard");
+    goTo("orders");
   } catch (err) {
     errEl.textContent = err.message || "Couldn't sign in.";
     errEl.style.display = "block";
@@ -1525,7 +1522,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Resume an existing admin session if we still have one, else show login
   if (adminAuth.current) {
     await Promise.all([loadProducts(), loadOrders()]);
-    state.screen = productsLoadError ? "login" : "dashboard";
+    state.screen = productsLoadError ? "login" : "orders";
     if (productsLoadError) { await adminAuth.logout(); }
   } else {
     state.screen = "login";
