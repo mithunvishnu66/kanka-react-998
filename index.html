@@ -1826,17 +1826,16 @@ function InstagramGallery() {
   return (
     <section style={{ background:"#FAF9F7", paddingBottom:80 }}>
       <div className="container">
-        <div style={{ textAlign:"center", marginBottom:36 }}>
-          <div style={{ display:"flex", justifyContent:"center", marginBottom:12, color:"#C5A468" }}>
-            <IconInstagram size={34} />
-          </div>
-          <h2 style={{ fontFamily:"Cormorant Garamond, serif", fontSize:32, fontWeight:400, color:"#1A1008", marginBottom:6 }}>
-            @kanka.official
-          </h2>
+        <div style={{ textAlign:"center" }}>
+          <a href="https://www.instagram.com/kanka_clothing?stkn=bGN1bzI4eGcyZnZv" target="_blank" rel="noopener noreferrer" style={{ textDecoration:"none", display:"block" }}>
+            <div style={{ display:"flex", justifyContent:"center", marginBottom:12, color:"#C5A468" }}>
+              <IconInstagram size={34} />
+            </div>
+            <h2 style={{ fontFamily:"Cormorant Garamond, serif", fontSize:32, fontWeight:400, color:"#1A1008", marginBottom:6 }}>
+              @kanka_clothing
+            </h2>
+          </a>
           <p style={{ fontFamily:"Jost", fontSize:12, color:"#8C7B6E" }}>Follow us for styling inspiration &amp; new arrivals</p>
-        </div>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(6,1fr)", gap:4 }}>
-          {photos.map((src, i) => <InstaPhoto key={i} src={src} />)}
         </div>
       </div>
     </section>
