@@ -457,10 +457,10 @@ async function loadOrders() {
 
     ORDERS = rows.map(o => {
       const addr = o.shipping_address || {};
-      /* The panel expects items as [id, "Colour · Size", lineTotal]. */
+      /* The panel expects items as [name, "Colour · Size", lineTotal]. */
       const items = (o.order_items || []).map((it, i) => [
-        `it${i}`,
-        [it.product_name, [it.color, it.size].filter(Boolean).join(" · ")].filter(Boolean).join(" — "),
+        it.product_name || "Item",
+        [it.color, it.size].filter(Boolean).join(" · "),
         Number(it.line_total) || 0,
       ]);
       /* payment_status drives fulfilment; status is the fulfilment stage.
