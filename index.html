@@ -516,6 +516,9 @@ window.loadKankaData = async function loadKankaData() {
       name:          p.name,
       price:         parseFloat(p.price),
       originalPrice: p.original_price ? parseFloat(p.original_price) : null,
+      discount:      (p.original_price && parseFloat(p.original_price) > parseFloat(p.price))
+                       ? Math.round((1 - parseFloat(p.price) / parseFloat(p.original_price)) * 100)
+                       : 0,
       category:      p.category,
       tags:          p.tags || [],
       rating:        parseFloat(p.rating) || 0,
@@ -1085,7 +1088,7 @@ function ProductCard({ product }) {
           <span style={{ fontFamily: "Jost", fontSize: 15, fontWeight: 500, color: "#1A1008" }}>₹{product.price.toLocaleString("en-IN")}</span>
           {product.originalPrice && product.originalPrice > product.price && <>
             <span style={{ fontFamily: "Jost", fontSize: 13, color: "#B8A99A", textDecoration: "line-through" }}>₹{product.originalPrice.toLocaleString("en-IN")}</span>
-            <span style={{ fontFamily: "Jost", fontSize: 11, color: "#C5A468", fontWeight: 600 }}>−{product.discount}%</span>
+            {product.discount > 0 && <span style={{ fontFamily: "Jost", fontSize: 11, color: "#C5A468", fontWeight: 600 }}>−{product.discount}%</span>}
           </>}
         </div>
         <div style={{ display: "flex", gap: 5, marginTop: 8 }}>
