@@ -463,18 +463,23 @@ async function loadOrders() {
         [it.color, it.size].filter(Boolean).join(" · "),
         Number(it.line_total) || 0,
       ]);
-      /* payment_status drives fulfilment; status is the fulfilment stage.
-         A brand-new paid order has status "paid" and moves forward from
-         there. Fall back to payment_status when status isn't a flow step. */
-      const stage = FLOW.includes(o.status) ? o.status
-                  : (o.payment_status === "paid" ? "paid" : "pending");
+      /* Only a PAID order is a real, actionable order. The order row is
+         created BEFORE payment, so a cancelled/abandoned checkout is left at
+         status "pending" with payment_status not "paid". That must show as
+         UNPAID — never as a confirmed order the client would ship.
+         Precedence: cancelled → advanced fulfilment stage → paid → unpaid. */
+      const paidStages = ["paid","packed","shipped","delivered"];
+      const stage = o.status === "cancelled"     ? "cancelled"
+                  : paidStages.includes(o.status) ? o.status
+                  : o.payment_status === "paid"   ? "paid"
+                  : "unpaid";
       return {
         id: o.id,
         number: o.order_number,
         name: o.customer_name || addr.name || "Guest",
         contact: o.customer_email || o.customer_phone || "—",
         date: o.created_at ? new Date(o.created_at).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}) : "",
-        status: o.status === "cancelled" ? "cancelled" : stage,
+        status: stage,
         shipping: Number(o.shipping_amount) || 0,
         items,
         addr1: addr.line1 || addr.address || addr.street || "",
@@ -511,6 +516,7 @@ async function loadOrders() {
 }
 
 const STATUS_META = {
+  unpaid:    { label:"Unpaid",    color:"#B2632A", bg:"#F6E9DD" },
   pending:   { label:"Pending",   color:"#9A7B2E", bg:"#F4ECD7" },
   paid:      { label:"Paid",      color:"#3B6B2A", bg:"#E7EFDF" },
   packed:    { label:"Packed",    color:"#2A5A7A", bg:"#E0ECF2" },
@@ -590,9 +596,9 @@ function render() {
   $("#search-inp").placeholder = screen === "orders" ? "Search orders…" : screen === "customers" ? "Search customers…" : screen === "products" ? "Search products…" : "Search…";
 
   // sidebar nav
-  const pending = ORDERS.filter(o => o.status==="pending").length;
+  const awaiting = ORDERS.filter(o => o.status==="paid").length;
   const navList = [
-    {id:"orders",    label:"Orders",    badge: pending||""},
+    {id:"orders",    label:"Orders",    badge: awaiting||""},
     {id:"customers", label:"Customers"},
     {id:"products",  label:"Products"},
   ];
@@ -634,7 +640,7 @@ function renderScreen(screen, wrap) {
 // ── ORDERS ──
 function renderOrders(wrap, q) {
   const filterWrap = el("div",{style:{display:"flex",gap:"8px",marginBottom:"18px",flexWrap:"wrap"}});
-  ["all",...FLOW,"cancelled"].forEach(f => {
+  ["all","unpaid","paid","packed","shipped","delivered","cancelled"].forEach(f => {
     const cnt = f==="all" ? ORDERS.length : ORDERS.filter(o=>o.status===f).length;
     const btn = el("button", {onclick:()=>{state.orderFilter=f; renderScreen("orders",wrap); wrap.innerHTML=""; renderScreen("orders",wrap);}});
     btn.className = "filter-btn"+(state.orderFilter===f?" active":"");
@@ -1295,6 +1301,9 @@ function renderPanel(o) {
   document.getElementById("close-panel").addEventListener("click", closeOrder);
 
   const actionsWrap = document.getElementById("status-actions");
+  if (o.status === "unpaid") {
+    actionsWrap.innerHTML = `<div style="background:#F6E9DD;border:1px solid #E6C9AC;border-radius:8px;padding:12px 14px;font-family:'Jost';font-size:12.5px;color:#8A4B1E;line-height:1.6;">Payment was not completed for this order — it is <strong>not confirmed</strong>. Do not pack or ship it. No action needed.</div>`;
+  } else {
   [...FLOW,"cancelled"].forEach(s => {
     const active = o.status === s;
     const isCancel = s === "cancelled";
@@ -1335,6 +1344,7 @@ function renderPanel(o) {
     }, isCancel ? "Cancel" : STATUS_META[s].label);
     actionsWrap.appendChild(btn);
   });
+  }
 }
 
 // ══════════════════════════════════════════
