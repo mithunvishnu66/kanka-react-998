@@ -178,7 +178,7 @@
   <div class="login-brand">
     <div style="position:relative;display:flex;align-items:center;gap:10px;">
       <div style="width:9px;height:9px;background:#C5A468;border-radius:50%;"></div>
-      <span style="font-family:'Jost';font-size:11px;font-weight:600;letter-spacing:0.34em;color:#C5A468;">EST. 2015</span>
+      <span style="font-family:'Jost';font-size:11px;font-weight:600;letter-spacing:0.34em;color:#C5A468;">EST. 2021</span>
     </div>
     <div style="position:relative;">
       <p style="font-family:'Jost';font-size:11px;font-weight:600;letter-spacing:0.4em;color:rgba(250,249,247,0.5);margin-bottom:18px;">THE ATELIER</p>
@@ -419,17 +419,18 @@ async function loadProducts() {
    the product cards and the editor dropdown all follow. Keep the keys in
    sync with products.category in Supabase and with window.CATEGORIES in
    index.html (the storefront). */
-const CATEGORY_LABELS = { kurta:"Kurta", tshirt:"T-Shirt", dhoti:"Dhoti Pant" };
+const CATEGORY_LABELS = { kurta:"Kurthas", dhoti:"Dhoti Pants", tshirt:"T-Shirt" };
 const CATEGORY_KEYS = Object.keys(CATEGORY_LABELS);
 const DEFAULT_CATEGORY = CATEGORY_KEYS[0];
 
 /* Line-art silhouette per category — lets the client recognise the option
-   by shape before reading it. The veshti's lower band echoes the woven
-   gold border the real garment has. */
+   by shape before reading it. The kurtha is drawn long with side slits and
+   a centre placket; the dhoti pant is drawn wider and pleated so it reads
+   as distinct from a plain trouser at 18px. */
 const CATEGORY_ICONS = {
+  kurta:  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M8.8 3.5 4.6 5.6 3.2 9.1l2.4 1.3 1-1.3V20.5h10.8V9.1l1 1.3 2.4-1.3-1.4-3.5-4.2-2.1Z"/><path d="M8.8 3.5h6.4" stroke-width="1.2"/><path d="M12 5.4v6.2M7.6 17.4v3.1M16.4 17.4v3.1" stroke-width="1.1" opacity=".5"/></svg>`,
+  dhoti:  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M5.4 3.5h13.2l1.2 17h-5.3L12 11.8l-2.5 8.7H4.2Z"/><path d="M5.4 7.1h13.2" stroke-width="1.2"/><path d="M9.6 7.6v3.4M12 7.6v3.9M14.4 7.6v3.4" stroke-width="1.1" opacity=".5"/></svg>`,
   tshirt: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M8.5 3.5 4 6 2.5 9.2l2.6 1.5 1.2-1.4V20.5h11.4V9.3l1.2 1.4 2.6-1.5L20 6l-4.5-2.5a3.6 3.6 0 0 1-7 0Z"/></svg>`,
-  kurta: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M9.7 3.6 8.4 4.1 4 7.4l1.5 2.3 1.8-1.1L6.6 21h10.8l-.7-12.4 1.8 1.1L20 7.4l-4.4-3.3-1.3-.5Z"/><path d="M9.7 3.6 12 6.1l2.3-2.5" stroke-width="1.2"/><path d="M12 6.1V19" stroke-width="1.1" opacity=".55"/><path d="M6.75 17.4h10.5" stroke-width="1.1" opacity=".55"/></svg>`,
-  dhoti:  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M6.6 3.5h10.8l1.1 17h-4.6L12 11.4l-1.9 9.1H5.5Z"/><path d="M6.6 7.2h10.8" stroke-width="1.1" opacity=".5"/></svg>`,
 };
 
 const ICON_CHEVRON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>`;
@@ -451,14 +452,6 @@ async function loadOrders() {
         "select=id,order_number,status,payment_status,total_amount,shipping_amount,"
       + "customer_name,customer_email,customer_phone,shipping_address,created_at,"
       + "order_items(product_name,color,size,quantity,line_total)"
-      /* A `pending` row is written the instant Pay is clicked, BEFORE the
-         Razorpay popup — so closing the popup leaves an abandoned order
-         nobody paid for. Exclude those: only show orders whose
-         payment_status is anything other than the initial 'pending'
-         (paid / failed / refunded / amount_mismatch / signature_failed).
-         The client's Orders list then shows real orders, not
-         abandoned checkouts. */
-      + "&payment_status=neq.pending"
       + "&order=created_at.desc";
     const rows = await sbFetch(`orders?${query}`);
 
@@ -588,7 +581,6 @@ function render() {
 
   // titles
   const titles = {
-    dashboard: ["Good morning, Kanka", "Sunday, 22 June 2026 — here's the studio today."],
     orders:    ["Orders", "Track fulfillment and update delivery status."],
     customers: ["Customers", CUSTOMERS.length + " people have an account."],
     products:  ["Products", PRODUCTS.length + " styles in the current collection."],
@@ -637,108 +629,6 @@ function renderScreen(screen, wrap) {
   if (screen==="orders")    renderOrders(wrap, q);
   if (screen==="customers") renderCustomers(wrap, q);
   if (screen==="products")  renderProducts(wrap, q);
-}
-
-// ── DASHBOARD ──
-function renderDash(wrap) {
-  const allTotals = ORDERS.map(orderTotal);
-  const monthSales = allTotals.reduce((a,b)=>a+b,0);
-  const stats = [
-    {label:"TODAY'S SALES", value:money(376),   sub:"2 orders today",  delta:"+18%", dc:"#3B6B2A", bar:"#C5A468"},
-    {label:"MONTH REVENUE", value:money(monthSales), sub:"June so far", delta:"+12%",dc:"#3B6B2A", bar:"#6E7359"},
-    {label:"OPEN ORDERS",   value:String(ORDERS.filter(o=>["pending","paid","packed"].includes(o.status)).length), sub:"awaiting action", delta:"live", dc:"#9A7B2E", bar:"#9C6B4A"},
-    {label:"CUSTOMERS",     value:String(CUSTOMERS.length-1), sub:"registered", delta:"+3 new", dc:"#3B6B2A", bar:"#5E6E78"},
-  ];
-
-  // stat grid
-  const sg = el("div", {style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"16px",marginBottom:"22px"}});
-  sg.className = "stat-grid";
-  stats.forEach(s => {
-    const card = el("div"); card.className = "stat-card";
-    card.innerHTML = `
-      <div class="stat-bar" style="background:${s.bar};"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
-        <p style="font-family:'Jost';font-size:10px;font-weight:600;letter-spacing:0.13em;color:#9A8978;">${s.label}</p>
-        <span style="font-family:'Jost';font-size:11px;font-weight:600;color:${s.dc};">${s.delta}</span>
-      </div>
-      <p style="font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:600;color:#1A1008;line-height:0.95;">${s.value}</p>
-      <p style="font-family:'Jost';font-size:11.5px;color:#9A8978;margin-top:6px;">${s.sub}</p>`;
-    sg.appendChild(card);
-  });
-  wrap.appendChild(sg);
-
-  // 2-col
-  const dc = el("div",{style:{display:"grid",gridTemplateColumns:"1.55fr 1fr",gap:"16px"}});
-  dc.className = "dash-cols";
-
-  // chart
-  const days=[["Wed",290],["Thu",170],["Fri",420],["Sat",640],["Sun",380],["Mon",210],["Tue",376]];
-  const maxV = Math.max(...days.map(d=>d[1]));
-  const weekTotal = money(days.reduce((a,d)=>a+d[1],0));
-  const chartCard = el("div",{style:{background:"#FBF8F3",border:"1px solid #EAE1D4",borderRadius:"14px",padding:"24px"}});
-  chartCard.innerHTML = `
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px;">
-      <div>
-        <p style="font-family:'Jost';font-size:10.5px;font-weight:600;letter-spacing:0.13em;color:#9A8978;margin-bottom:7px;">REVENUE · LAST 7 DAYS</p>
-        <p style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;color:#1A1008;line-height:1;">${weekTotal}</p>
-      </div>
-      <span style="font-family:'Jost';font-size:11px;font-weight:500;color:#3B6B2A;background:#E7EFDF;padding:5px 11px;border-radius:999px;">+12% vs last week</span>
-    </div>
-    <div style="display:flex;align-items:flex-end;gap:10px;height:160px;">
-      ${days.map((d,i) => `
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:9px;height:100%;justify-content:flex-end;">
-          <span style="font-family:'Jost';font-size:10px;color:#A89684;">$${d[1]}</span>
-          <div class="chart-bar" style="width:100%;max-width:34px;height:${Math.round((d[1]/maxV)*130)}px;background:${i===days.length-1?"#C5A468":"#D8CDBD"};border-radius:6px 6px 0 0;"></div>
-          <span style="font-family:'Jost';font-size:10.5px;font-weight:500;color:#9A8978;">${d[0]}</span>
-        </div>`).join("")}
-    </div>`;
-  dc.appendChild(chartCard);
-
-  // low stock
-  const low = PRODUCTS.filter(p=>p.stock<=5).sort((a,b)=>a.stock-b.stock).slice(0,5);
-  const lowCard = el("div",{style:{background:"#1A1008",borderRadius:"14px",padding:"24px",color:"#FAF9F7"}});
-  lowCard.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
-      <p style="font-family:'Jost';font-size:10.5px;font-weight:600;letter-spacing:0.13em;color:#C5A468;">NEEDS RESTOCK</p>
-      <span style="font-family:'Jost';font-size:11px;color:rgba(250,249,247,0.5);">${low.length} items</span>
-    </div>
-    <div>${low.map(p => {
-      const sold=p.stock===0,draft=p.stock<0;
-      const sl=draft?"Draft":sold?"Sold out":p.stock+" left";
-      const sc=draft?"rgba(250,249,247,0.5)":sold?"#E8A0A0":"#C5A468";
-      return `<div style="display:flex;align-items:center;gap:13px;padding:11px 0;border-bottom:1px solid rgba(250,249,247,0.08);">
-        <div style="width:34px;height:34px;border-radius:8px;flex-shrink:0;background:${p.swatch};"></div>
-        <div style="flex:1;min-width:0;">
-          <p style="font-family:'Jost';font-size:13px;color:#FAF9F7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</p>
-          <p style="font-family:'Jost';font-size:11px;color:rgba(250,249,247,0.45);">${p.cat}</p>
-        </div>
-        <span style="font-family:'Jost';font-size:11px;font-weight:600;color:${sc};">${sl}</span>
-      </div>`;
-    }).join("")}</div>`;
-  dc.appendChild(lowCard);
-  wrap.appendChild(dc);
-
-  // recent orders
-  const ro = el("div",{style:{background:"#FBF8F3",border:"1px solid #EAE1D4",borderRadius:"14px",padding:"24px",marginTop:"16px"}});
-  const roHead = el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"6px"}});
-  roHead.innerHTML = `<p style="font-family:'Jost';font-size:10.5px;font-weight:600;letter-spacing:0.13em;color:#1A1008;">RECENT ORDERS</p>`;
-  const vaBtn = el("button",{style:{fontFamily:"Jost",fontSize:"12px",fontWeight:"500",color:"#C5A468",background:"none",border:"none"},onclick:()=>goTo("orders")}, "View all →");
-  roHead.appendChild(vaBtn);
-  ro.appendChild(roHead);
-  ORDERS.slice(0,5).forEach(o => {
-    const row = el("div");
-    row.className = "table-row";
-    row.style.paddingLeft = "6px"; row.style.paddingRight = "6px";
-    row.innerHTML = `
-      <span style="font-family:'Jost';font-size:13px;font-weight:600;color:#1A1008;width:96px;flex-shrink:0;">${esc(o.number)}</span>
-      <span style="font-family:'Jost';font-size:13px;color:#6B5744;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(o.name)}</span>
-      <span class="hide-mobile" style="font-family:'Jost';font-size:12.5px;color:#9A8978;width:110px;flex-shrink:0;">${o.date}</span>`;
-    row.appendChild(badge(o.status));
-    row.innerHTML += `<span style="font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;color:#1A1008;width:78px;text-align:right;flex-shrink:0;">${money(orderTotal(o))}</span>`;
-    row.addEventListener("click", () => openOrder(o.id));
-    ro.appendChild(row);
-  });
-  wrap.appendChild(ro);
 }
 
 // ── ORDERS ──
@@ -1237,8 +1127,8 @@ async function saveProductDraft() {
   const priceNum = Number(d.price);
   if (!Number.isFinite(priceNum) || priceNum <= 0) { d.error = "Enter a valid price."; renderProductPanel(); return; }
   /* original_price is the struck-through "was" price. If set it must be
-     HIGHER than the selling price, else the storefront shows a negative
-     saving. Blank is fine — means the item isn't on sale. */
+     HIGHER than the selling price, or the storefront shows a negative
+     saving. Empty is fine — it just means the item isn't on sale. */
   if (d.originalPrice && String(d.originalPrice).trim()) {
     const origNum = Number(d.originalPrice);
     if (!Number.isFinite(origNum) || origNum <= 0) {
@@ -1376,11 +1266,15 @@ function renderPanel(o) {
       <div style="background:#FBF8F3;border:1px solid #EAE1D4;border-radius:12px;padding:18px 20px;margin-bottom:16px;">
         <p style="font-family:'Jost';font-size:10px;font-weight:600;letter-spacing:0.12em;color:#9A8978;margin-bottom:14px;">ITEMS</p>
         ${o.items.map(it => {
-          const p = prod(it[0]);
+          const p = PRODUCTS.find(pp => pp.name === it[0]);
+          const img = p && p.images && p.images[0] ? p.images[0].url : null;
+          const thumb = img
+            ? `background-image:url('${img}');background-size:cover;background-position:center;`
+            : `background:${p?p.swatch:"#D8CDBD"};`;
           return `<div style="display:flex;align-items:center;gap:13px;padding:8px 0;border-bottom:1px solid #EFE8DD;">
-            <div style="width:42px;height:50px;border-radius:6px;flex-shrink:0;background:${p?p.swatch:"#D8CDBD"};"></div>
+            <div style="width:42px;height:50px;border-radius:6px;flex-shrink:0;${thumb}"></div>
             <div style="flex:1;min-width:0;">
-              <p style="font-family:'Jost';font-size:13.5px;font-weight:500;color:#1A1008;">${p?p.name:"Item"}</p>
+              <p style="font-family:'Jost';font-size:13.5px;font-weight:500;color:#1A1008;">${esc(it[0]||"Item")}</p>
               <p style="font-family:'Jost';font-size:12px;color:#A89684;">${esc(it[1])}</p>
             </div>
             <span style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:#1A1008;">${money(it[2])}</span>
@@ -1477,7 +1371,7 @@ async function attemptLogin() {
   try {
     await adminAuth.login(email, pw);
     await Promise.all([loadProducts(), loadOrders()]);
-    goTo("orders");
+    goTo("products");
   } catch (err) {
     errEl.textContent = err.message || "Couldn't sign in.";
     errEl.style.display = "block";
@@ -1522,7 +1416,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Resume an existing admin session if we still have one, else show login
   if (adminAuth.current) {
     await Promise.all([loadProducts(), loadOrders()]);
-    state.screen = productsLoadError ? "login" : "orders";
+    state.screen = productsLoadError ? "login" : "products";
     if (productsLoadError) { await adminAuth.logout(); }
   } else {
     state.screen = "login";
