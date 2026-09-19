@@ -440,6 +440,10 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 // Expose globally so auth.jsx can use them
 window.SUPABASE_URL = SUPABASE_URL;
 window.SUPABASE_KEY = SUPABASE_KEY;
+/* Accounts + phone-OTP login are BUILT but hidden until an SMS provider
+   (MSG91 + DLT) is connected in Supabase. The login code is untouched —
+   flip this to true to bring the account icon back everywhere. */
+window.ACCOUNTS_ENABLED = false;
 
 /* ─── STATIC: COLLECTIONS ───────────────────────────────────────────── */
 window.COLLECTIONS = [
@@ -1286,9 +1290,11 @@ function Navbar({ transparent = false, noSearch = false, overlay = false }) {
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 22 }}>
           {!noSearch && <button onClick={() => { setSearchOpen((s) => !s); setQuery(""); }} className="hide-mobile" style={{ background: "none", border: "none", color: iconColor, padding: 4, transition: "color 0.35s", lineHeight: 0 }}>{searchOpen ? <IconX /> : <IconSearch />}</button>}
           <div className="hide-mobile" style={{ display: "flex", alignItems: "center", gap: 22 }}>
+            {window.ACCOUNTS_ENABLED && (
             <button onClick={() => navigate(window.auth?.current ? "account" : "login")} style={{ background: "none", border: "none", color: iconColor, padding: 4, transition: "color 0.35s", lineHeight: 0 }}>
               <IconUser />
             </button>
+            )}
             <button onClick={() => navigate("cart")} style={{ background: "none", border: "none", color: iconColor, padding: 4, position: "relative", transition: "color 0.35s", lineHeight: 0 }}>
               <IconBag />
               {cartCount > 0 &&
@@ -1342,12 +1348,14 @@ function Navbar({ transparent = false, noSearch = false, overlay = false }) {
               </button>
           )}
             {/* Login / Account link */}
+            {window.ACCOUNTS_ENABLED && (
             <button onClick={() => { navigate(window.auth?.current ? "account" : "login"); setMobileOpen(false); }}
               style={{ background: "none", border: "none", cursor: "pointer", textAlign: "left",
                 fontFamily: "Jost", fontSize: 13, fontWeight: 600, letterSpacing: "0.1em",
                 color: "#C5A468" }}>
               {window.auth?.current ? "MY ACCOUNT" : "SIGN IN / REGISTER"}
             </button>
+            )}
           </div>
         </div>
       }
@@ -4259,10 +4267,12 @@ function MobileBottomNav() {
             {cartCount > 0 && <span className="mobile-nav-badge">{cartCount}</span>}
             <span className="mobile-nav-label">BAG</span>
           </button>
+          {window.ACCOUNTS_ENABLED && (
           <button className={`mobile-nav-item ${isAccount ? "active" : ""}`} onClick={accountClick} aria-label="Account">
             <IconUserM filled={isAccount} />
             <span className="mobile-nav-label">ME</span>
           </button>
+          )}
         </div>
       </nav>
 
