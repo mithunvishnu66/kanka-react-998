@@ -421,6 +421,10 @@ async function loadProducts() {
    index.html (the storefront). */
 const CATEGORY_LABELS = { kurta:"Kurthas", dhoti:"Dhoti Pants", tshirt:"T-Shirt" };
 const CATEGORY_KEYS = Object.keys(CATEGORY_LABELS);
+/* Kurthas come in two lengths. Stored as a reserved tag ("short" / "long")
+   so no DB column is needed; the storefront filters on it inside Kurthas. */
+const LENGTH_LABELS = { short:"Short Kurtha", long:"Long Kurtha" };
+const LENGTH_KEYS = Object.keys(LENGTH_LABELS);
 const DEFAULT_CATEGORY = CATEGORY_KEYS[0];
 
 /* Line-art silhouette per category — lets the client recognise the option
@@ -814,7 +818,8 @@ function openProductEditor(p) {
     price: String(p.price ?? ""), originalPrice: p.originalPrice!=null?String(p.originalPrice):"",
     description: p.description || "",
     details: (p.details||[]).join("\n"),
-    tags: (p.tags||[]).join(", "),
+    length: (p.tags||[]).find(t => LENGTH_KEYS.includes(String(t).toLowerCase())) || "",
+    tags: (p.tags||[]).filter(t => !LENGTH_KEYS.includes(String(t).toLowerCase())).join(", "),
     isActive: p.isActive !== false,
     colors: p.colors.length ? p.colors.map(c=>({_cid:c.id||("c"+Math.random()), name:c.name, hex:c.hex})) : [{_cid:"c0", name:"", hex:"#C5A468"}],
     sizes: [...p.sizes],
@@ -834,7 +839,7 @@ function openProductEditor(p) {
   } : {
     id: null, isNew: true,
     name: "", slug: "", slugManuallyEdited: false,
-    category: DEFAULT_CATEGORY, price: "", originalPrice: "",
+    category: "", length: "", price: "", originalPrice: "",
     description: "", details: "", tags: "", isActive: true,
     colors: [{_cid:"c0", name:"", hex:"#C5A468"}],
     sizes: [], images: [], stock: {},
@@ -881,7 +886,7 @@ function renderProductPanel() {
           <button type="button" class="kk-select-trigger" id="f-category-trigger"
                   role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="f-category-menu">
             <span class="kk-select-icon" id="f-category-icon">${CATEGORY_ICONS[d.category] || ""}</span>
-            <span class="kk-select-value" id="f-category-value">${CATEGORY_LABELS[d.category] || "Choose a category"}</span>
+            <span class="kk-select-value${d.category ? "" : " placeholder"}" id="f-category-value">${CATEGORY_LABELS[d.category] || "Choose a category"}</span>
             <span class="kk-select-chev">${ICON_CHEVRON}</span>
           </button>
           <div class="kk-select-menu" id="f-category-menu" role="listbox" aria-labelledby="f-category-label">
@@ -894,6 +899,14 @@ function renderProductPanel() {
           </div>
         </div>
       </div>
+      ${d.category === "kurta" ? `
+      <div class="f-row">
+        <label class="f-label">LENGTH</label>
+        <div class="chip-row" id="length-chip-row">
+          ${LENGTH_KEYS.map(k => `<div class="chip ${d.length===k?"on":""}" data-len="${k}">${LENGTH_LABELS[k]}</div>`).join("")}
+        </div>
+        <p class="f-hint">Shown as a filter inside Kurthas on the storefront.</p>
+      </div>` : ""}
       <div style="display:flex;gap:14px;">
         <div class="f-row" style="flex:1;"><label class="f-label">PRICE (₹)</label><input id="f-price" class="f-input" type="number" min="0" step="1" value="${escAttr(d.price)}" placeholder="4999" /></div>
         <div class="f-row" style="flex:1;"><label class="f-label">ORIGINAL PRICE (₹)</label><input id="f-orig" class="f-input" type="number" min="0" step="1" value="${escAttr(d.originalPrice)}" placeholder="Optional — for a strike-through" /></div>
@@ -945,6 +958,13 @@ function renderProductPanel() {
   $("#f-details").addEventListener("input", e => { d.details = e.target.value; });
   $("#f-tags").addEventListener("input", e => { d.tags = e.target.value; });
   $("#f-active-toggle").addEventListener("click", () => { d.isActive = !d.isActive; renderProductPanel(); });
+  const lenRow = $("#length-chip-row");
+  if (lenRow) lenRow.addEventListener("click", e => {
+    const chip = e.target.closest("[data-len]");
+    if (!chip) return;
+    d.length = d.length === chip.dataset.len ? "" : chip.dataset.len;
+    renderProductPanel();
+  });
 
   $("#close-panel").addEventListener("click", closePanel);
   $("#cancel-product-btn").addEventListener("click", closePanel);
@@ -1019,8 +1039,9 @@ function wireCategorySelect() {
     val.textContent = CATEGORY_LABELS[key];
     val.classList.remove("placeholder");
     options.forEach(o => o.setAttribute("aria-selected", String(o.dataset.key === key)));
+    if (key !== "kurta") d.length = "";
     close();
-    trigger.focus();
+    renderProductPanel();
   };
 
   trigger.addEventListener("click", e => { e.stopPropagation(); isOpen() ? close() : open(); });
@@ -1130,6 +1151,8 @@ async function saveProductDraft() {
 
   if (!d.name.trim())            { d.error = "Give the product a name."; renderProductPanel(); return; }
   if (!d.slug.trim())            { d.error = "Give the product a slug."; renderProductPanel(); return; }
+  if (!d.category)               { d.error = "Choose a category."; renderProductPanel(); return; }
+  if (d.category === "kurta" && !d.length) { d.error = "Choose a length — short or long."; renderProductPanel(); return; }
   const priceNum = Number(d.price);
   if (!Number.isFinite(priceNum) || priceNum <= 0) { d.error = "Enter a valid price."; renderProductPanel(); return; }
   /* original_price is the struck-through "was" price. If set it must be
@@ -1160,7 +1183,10 @@ async function saveProductDraft() {
       original_price: d.originalPrice ? Number(d.originalPrice) : null,
       description: d.description.trim() || null,
       details: d.details.split("\n").map(s=>s.trim()).filter(Boolean),
-      tags: d.tags.split(",").map(s=>s.trim()).filter(Boolean),
+      tags: [
+        ...(d.category === "kurta" && d.length ? [d.length] : []),
+        ...d.tags.split(",").map(s=>s.trim()).filter(Boolean).filter(t => !LENGTH_KEYS.includes(t.toLowerCase())),
+      ],
       is_active: d.isActive,
     };
 
