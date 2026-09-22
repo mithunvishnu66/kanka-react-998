@@ -1463,6 +1463,8 @@ function Footer() {
                 <FooterLink key={l} label={l} onClick={() => {
                   if (l === "About") navigate("about");else
                   if (l === "Contact") navigate("contact");else
+                  if (l === "Shipping") navigate("shipping");else
+                  if (l === "Returns") navigate("refund");else
                   navigate("listing", { listFilter: "all" });
                 }} />
                 )}
@@ -1474,8 +1476,8 @@ function Footer() {
             display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
             <p style={{ fontFamily: "Jost", fontSize: 12, margin: 0 }}>© 2026 Kanka. All rights reserved.</p>
             <div style={{ display: "flex", gap: 24 }}>
-              {["Privacy Policy", "Terms", "Cookie Policy"].map((l) =>
-              <button key={l} style={{ background: "none", border: "none", fontFamily: "Jost", fontSize: 12, color: "#6B5744", cursor: "pointer" }}>{l}</button>
+              {[["Privacy Policy","privacy"], ["Terms","terms"], ["Refund Policy","refund"], ["Shipping","shipping"]].map(([l,pg]) =>
+              <button key={l} onClick={() => navigate(pg)} style={{ background: "none", border: "none", fontFamily: "Jost", fontSize: 12, color: "#6B5744", cursor: "pointer" }}>{l}</button>
               )}
             </div>
           </div>
@@ -2758,7 +2760,7 @@ function CartItem({ item }) {
 
 function OrderSummary({ onCheckout }) {
   const { cart, cartTotal } = useCart();
-  const shipping = 0;  /* free shipping on all orders */
+  const shipping = 150;  /* flat shipping on all orders */
   const tax      = cartTotal * 0.05;
   const total    = cartTotal + shipping + tax;
 
@@ -3030,7 +3032,7 @@ function StepInfo({ data, setData, onNext }) {
 /* ─── Step 2: Shipping ──────────────────────────────────────────── */
 function StepShipping({ selected, setSelected, onNext, onBack }) {
   const opts = [
-    { id:"standard", label:"Free Shipping", sub:"Delivered in 3–7 business days", price: "Free", note:"On all orders" },
+    { id:"standard", label:"Standard Shipping", sub:"Delivered in 7–14 business days", price: "₹150", note:"Flat rate, all orders" },
   ];
   return (
     <div>
@@ -3131,7 +3133,7 @@ function CheckoutSummary({ shipping: shippingProp }) {
   const [promo] = useState(() => {
     try { return JSON.parse(localStorage.getItem("kanka_discount") || "null"); } catch { return null; }
   });
-  const shipping = 0;  /* free shipping on all orders */
+  const shipping = 150;  /* flat shipping on all orders */
   const discount = Math.min(Number(promo?.discount || 0), cartTotal);
   const taxable  = cartTotal - discount;
   const total    = taxable + shipping + taxable * 0.05;
@@ -3425,10 +3427,10 @@ function AboutPage() {
           <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", justifyContent:"center", padding:"0 8vw" }}>
             <p style={{ fontFamily:"Jost", fontSize:11, fontWeight:600, letterSpacing:"0.2em", color:"#C5A468", marginBottom:16 }}>ABOUT KANKA</p>
             <h1 style={{ fontFamily:"Cormorant Garamond, serif", fontSize:"clamp(42px,6vw,80px)", fontWeight:500, color:"#FAF9F7", lineHeight:1.0, marginBottom:16 }}>
-              Crafted with<br/><em style={{ fontStyle:"italic", fontWeight:300 }}>intention.</em>
+              Four generations<br/><em style={{ fontStyle:"italic", fontWeight:300 }}>of craft.</em>
             </h1>
             <p style={{ fontFamily:"Jost", fontSize:14, fontWeight:300, color:"rgba(250,249,247,0.75)", maxWidth:380, lineHeight:1.7 }}>
-              Where artisanship meets the modern silhouette.
+              Traditional Indian menswear, woven with care in Tamil Nadu.
             </p>
           </div>
         </section>
@@ -3439,13 +3441,13 @@ function AboutPage() {
             <div>
               <p style={{ fontFamily:"Jost", fontSize:11, fontWeight:600, letterSpacing:"0.18em", color:"#C5A468", marginBottom:14 }}>OUR STORY</p>
               <h2 style={{ fontFamily:"Cormorant Garamond, serif", fontSize:"clamp(30px,3.5vw,48px)", fontWeight:500, color:"#1A1008", lineHeight:1.1, marginBottom:24 }}>
-                Born from a love of beautiful things
+                A family craft, four generations on
               </h2>
               <p style={{ fontFamily:"Jost", fontSize:14, lineHeight:1.85, color:"#5C4033", marginBottom:18 }}>
-                Kanka was founded in 2019 by Amara Osei, a Ghanaian-British designer who grew up between Accra and London. Frustrated by the false choice between fast fashion and unattainable luxury, she set out to create something different.
+                Kanka is a family business from Salem, Tamil Nadu, built on four generations of weaving and craftsmanship. What began as a deep knowledge of fabric and handwork has grown into a menswear label that carries that heritage forward.
               </p>
               <p style={{ fontFamily:"Jost", fontSize:14, lineHeight:1.85, color:"#5C4033", marginBottom:28 }}>
-                Each Kanka piece is designed in our London studio and produced in small batches by family-run ateliers in Portugal, Italy, and France — artisans who share our belief that beautiful clothing should also be made responsibly.
+                Today we bring that tradition together with everyday style — kurtas, dhoti pants and t-shirts made from quality fabrics, in a range of designs meant to be worn and lived in, for occasions and for daily wear alike.
               </p>
               <PrimaryBtn outline onClick={() => navigate("listing",{listFilter:"all"})}>
                 SHOP THE COLLECTION <IconArrowRight size={15}/>
@@ -3461,22 +3463,22 @@ function AboutPage() {
         {/* Values */}
         <section className="section" style={{ background:"#F7F3EE" }}>
           <div className="container">
-            <SectionHeader label="WHAT WE STAND FOR" title="Our Values" subtitle="Three commitments that guide every decision we make." />
+            <SectionHeader label="WHAT WE STAND FOR" title="Our Values" subtitle="Three things that guide how we make our clothes." />
             <div className="about-values-grid">
               {[
                 {
-                  num:"01", title:"Radical Transparency",
-                  text:"We publish the name, location, and wages of every atelier we work with. Our supply chain has nothing to hide.",
+                  num:"01", title:"Four Generations of Craft",
+                  text:"Our knowledge of fabric and weaving has been passed down through four generations. That inheritance shapes every piece we make.",
                   color:"#C5A468",
                 },
                 {
-                  num:"02", title:"Timeless Over Trendy",
-                  text:"We design pieces that transcend the season. Buy less, choose well — our garments are made to last a decade, not a year.",
+                  num:"02", title:"Quality Fabrics",
+                  text:"We choose fabrics that feel good and last — comfortable enough for daily wear and considered enough for occasions.",
                   color:"#8C7B6E",
                 },
                 {
-                  num:"03", title:"Zero Waste Ambition",
-                  text:"We cut fabric using zero-waste patterns and donate all offcuts to design schools. By 2027, we aim to be fully carbon-neutral.",
+                  num:"03", title:"Made in India",
+                  text:"Kanka is made in Salem, Tamil Nadu, keeping our craft close to home and close to the people who practise it.",
                   color:"#6B5744",
                 },
               ].map(v => (
@@ -3493,7 +3495,7 @@ function AboutPage() {
         {/* Stats */}
         <section className="section" style={{ background:"#1A1008", paddingTop:64, paddingBottom:64 }}>
           <div className="container about-stats-grid" style={{ textAlign:"center" }}>
-            {[["2019","Founded"],["12","Atelier Partners"],["40+","Countries Shipped"],["98%","Customer Satisfaction"]].map(([n,l]) => (
+            {[["4","Generations of Craft"],["100%","Made in India"],["5-Day","Easy Returns"],["Salem","Our Home, Tamil Nadu"]].map(([n,l]) => (
               <div key={l}>
                 <p style={{ fontFamily:"Cormorant Garamond, serif", fontSize:"clamp(36px,4vw,58px)", fontWeight:500, color:"#C5A468", marginBottom:8 }}>{n}</p>
                 <p style={{ fontFamily:"Jost", fontSize:12, fontWeight:500, letterSpacing:"0.12em", color:"#B8A99A" }}>{l.toUpperCase()}</p>
@@ -3502,15 +3504,15 @@ function AboutPage() {
           </div>
         </section>
 
-        {/* Press */}
-        <section className="section" style={{ background:"#FAF9F7" }}>
-          <div className="container" style={{ textAlign:"center" }}>
-            <p style={{ fontFamily:"Jost", fontSize:11, fontWeight:600, letterSpacing:"0.18em", color:"#B8A99A", marginBottom:32 }}>AS SEEN IN</p>
-            <div style={{ display:"flex", justifyContent:"center", alignItems:"center", gap:48, flexWrap:"wrap" }}>
-              {["VOGUE","ELLE","HARPER'S BAZAAR","PORTER","REFINERY29"].map(p => (
-                <span key={p} style={{ fontFamily:"Cormorant Garamond, serif", fontSize:20, fontWeight:600, letterSpacing:"0.15em", color:"#C4B8A8" }}>{p}</span>
-              ))}
-            </div>
+        {/* Closing CTA */}
+        <section className="section" style={{ background:"#FAF9F7", textAlign:"center" }}>
+          <div className="container">
+            <h2 style={{ fontFamily:"Cormorant Garamond, serif", fontSize:"clamp(26px,3vw,40px)", fontWeight:500, color:"#1A1008", marginBottom:20 }}>
+              Made to be worn
+            </h2>
+            <PrimaryBtn onClick={() => navigate("listing",{listFilter:"all"})}>
+              SHOP THE COLLECTION <IconArrowRight size={15}/>
+            </PrimaryBtn>
           </div>
         </section>
 
@@ -3568,9 +3570,10 @@ function ContactPage() {
               <div style={{ marginBottom:40 }}>
                 <h2 style={{ fontFamily:"Cormorant Garamond, serif", fontSize:28, fontWeight:500, color:"#1A1008", marginBottom:20 }}>Contact Details</h2>
                 {[
-                  { label:"EMAIL", val:"hello@kanka.com" },
-                  { label:"PHONE", val:"+44 (0) 20 7123 4567" },
-                  { label:"STUDIO",val:"14 Fashion Street, London E1 6PX, UK" },
+                  { label:"EMAIL", val:"kankaassociates21@gmail.com" },
+                  { label:"PHONE / WHATSAPP", val:"+91 9597694748" },
+                  { label:"ADDRESS",val:"5/144e, Rajiv Nagar, Seelanaickenpatti, Salem, Tamil Nadu – 636201" },
+                  { label:"GSTIN", val:"33AAXFK1837C1ZB" },
                 ].map(c => (
                   <div key={c.label} style={{ marginBottom:20 }}>
                     <p style={{ fontFamily:"Jost", fontSize:10, fontWeight:600, letterSpacing:"0.16em", color:"#C5A468", marginBottom:4 }}>{c.label}</p>
@@ -3580,8 +3583,8 @@ function ContactPage() {
               </div>
 
               <div style={{ marginBottom:40 }}>
-                <h3 style={{ fontFamily:"Cormorant Garamond, serif", fontSize:22, fontWeight:500, color:"#1A1008", marginBottom:16 }}>Studio Hours</h3>
-                {[["Monday – Friday","9:00 – 18:00"],["Saturday","10:00 – 16:00"],["Sunday","Closed"]].map(([d,h]) => (
+                <h3 style={{ fontFamily:"Cormorant Garamond, serif", fontSize:22, fontWeight:500, color:"#1A1008", marginBottom:16 }}>Support Hours</h3>
+                {[["Monday – Saturday","10:00 – 18:00"],["Sunday","Closed"]].map(([d,h]) => (
                   <div key={d} style={{ display:"flex", justifyContent:"space-between", padding:"10px 0", borderBottom:"1px solid #EDE8E0" }}>
                     <span style={{ fontFamily:"Jost", fontSize:13, color:"#6B5744" }}>{d}</span>
                     <span style={{ fontFamily:"Jost", fontSize:13, fontWeight:500, color:"#1A1008" }}>{h}</span>
@@ -3593,7 +3596,7 @@ function ContactPage() {
               <div style={{ borderRadius:12, overflow:"hidden", height:200, background:"#F2EDE7", display:"flex", alignItems:"center", justifyContent:"center", border:"1px solid #E8E0D5" }}>
                 <div style={{ textAlign:"center" }}>
                   <div style={{ fontSize:32, marginBottom:8 }}>📍</div>
-                  <p style={{ fontFamily:"Jost", fontSize:12, color:"#8C7B6E" }}>14 Fashion Street, London</p>
+                  <p style={{ fontFamily:"Jost", fontSize:12, color:"#8C7B6E" }}>Rajiv Nagar, Seelanaickenpatti, Salem</p>
                 </div>
               </div>
             </div>
@@ -3660,7 +3663,93 @@ function ContactPage() {
   );
 }
 
-Object.assign(window, { AboutPage, ContactPage });
+/* ══════════════════════════════════════════════════════════════════
+   LEGAL / POLICY PAGES  (Terms, Privacy, Refund, Shipping)
+   Content supplied by the business (Kanka Associates client form).
+══════════════════════════════════════════════════════════════════ */
+const POLICY_UPDATED = "22 September 2026";
+
+function LegalLayout({ kicker, title, sections }) {
+  return (
+    <div className="page-enter">
+      <Navbar />
+      <div>
+        <section className="section" style={{ background:"#F7F3EE", paddingTop:56, paddingBottom:56, borderBottom:"1px solid #EDE8E0" }}>
+          <div className="container">
+            <p style={{ fontFamily:"Jost", fontSize:11, fontWeight:600, letterSpacing:"0.18em", color:"#C5A468", marginBottom:12 }}>{kicker}</p>
+            <h1 style={{ fontFamily:"Cormorant Garamond, serif", fontSize:"clamp(34px,5vw,60px)", fontWeight:500, color:"#1A1008", lineHeight:1.05 }}>{title}</h1>
+            <p style={{ fontFamily:"Jost", fontSize:12.5, color:"#8C7B6E", marginTop:14 }}>Last updated: {POLICY_UPDATED}</p>
+          </div>
+        </section>
+        <section className="section">
+          <div className="container" style={{ maxWidth:820 }}>
+            {sections.map((s, i) => (
+              <div key={i} style={{ marginBottom:30 }}>
+                {s.h && <h2 style={{ fontFamily:"Cormorant Garamond, serif", fontSize:"clamp(20px,2.4vw,27px)", fontWeight:500, color:"#1A1008", marginBottom:12, lineHeight:1.25 }}>{s.h}</h2>}
+                {(s.body||[]).map((b, j) => <p key={j} style={{ fontFamily:"Jost", fontSize:14.5, lineHeight:1.85, color:"#5C4033", marginBottom:12 }}>{b}</p>)}
+                {s.list && <ul style={{ margin:"0 0 12px", paddingLeft:22 }}>{s.list.map((li,k)=><li key={k} style={{ fontFamily:"Jost", fontSize:14.5, lineHeight:1.8, color:"#5C4033", marginBottom:8 }}>{li}</li>)}</ul>}
+              </div>
+            ))}
+          </div>
+        </section>
+        <Footer />
+      </div>
+    </div>
+  );
+}
+
+function TermsPage() {
+  return <LegalLayout kicker="LEGAL" title="Terms & Conditions" sections={[
+    { body:["Welcome to Kanka Clothing. This website (kankaclothing.com) is owned and operated by Kanka Associates, Salem, Tamil Nadu (GSTIN 33AAXFK1837C1ZB). By accessing this website or placing an order, you agree to these Terms & Conditions."] },
+    { h:"Products and pricing", body:["All prices are listed in Indian Rupees (₹) and are inclusive of applicable GST. We make every effort to display product colours, descriptions and prices accurately, but we do not warrant that all content is error-free. We reserve the right to correct errors and to change prices at any time without prior notice."] },
+    { h:"Orders", body:["Placing an order is an offer to purchase. We reserve the right to accept or decline any order, and to cancel an order after it has been placed — for example where an item is out of stock, a pricing error has occurred, or an order is suspected to be fraudulent. Where an accepted order is cancelled by us, any amount paid is refunded."] },
+    { h:"Payments", body:["All payments are processed securely through Razorpay. We do not collect or store your card, UPI or bank details on our servers. Your order is confirmed only after payment is successfully verified."] },
+    { h:"Shipping, returns and refunds", body:["Delivery is governed by our Shipping Policy, and returns, cancellations and refunds by our Refund & Cancellation Policy, both of which form part of these Terms."] },
+    { h:"Intellectual property", body:["All content on this website — including the Kanka name, logo, product designs, images and text — is the property of Kanka Associates and may not be copied or reused without written permission."] },
+    { h:"Limitation of liability", body:["To the extent permitted by law, Kanka Associates shall not be liable for any indirect or consequential loss arising from the use of this website or from any delay caused by the courier or events beyond our reasonable control."] },
+    { h:"Governing law", body:["These Terms are governed by the laws of India. Any disputes are subject to the exclusive jurisdiction of the courts of Salem, Tamil Nadu."] },
+    { h:"Contact", body:["For any questions about these Terms, contact kankaassociates21@gmail.com or +91 9597694748."] },
+  ]} />;
+}
+
+function PrivacyPage() {
+  return <LegalLayout kicker="LEGAL" title="Privacy Policy" sections={[
+    { body:["Kanka Associates respects your privacy and is committed to protecting your personal data. This policy explains what we collect and how we use it, and reflects applicable Indian data-protection requirements, including the Digital Personal Data Protection Act, 2023 (DPDP Act)."] },
+    { h:"Information we collect", body:["When you place an order or create an account, we collect your name, email address, phone number, billing address and shipping address."] },
+    { h:"Why we collect it", body:["We use this information only to process and deliver your orders — including order processing, payment, delivery and customer support. We do not sell your personal data to any third party."] },
+    { h:"Payments", body:["Payments are processed by Razorpay. Your payment details are handled directly by Razorpay under their own security and privacy standards; we do not receive or store your full card, UPI or bank information."] },
+    { h:"Sharing with third parties", body:["We share only the information necessary to fulfil your order:"], list:["Courier / delivery partner — your shipping address and contact details, so your order can be delivered.","Razorpay — the information required to process your payment."] },
+    { h:"Marketing and analytics", body:["We use marketing and analytics tools to understand how our website is used and to improve your shopping experience."] },
+    { h:"Your rights", body:["Under the DPDP Act, 2023 you may request access to, correction of, or deletion of your personal data. To make a request, email kankaassociates21@gmail.com."] },
+    { h:"Data retention and security", body:["We retain your information only as long as needed to fulfil orders and meet legal obligations, and we take reasonable measures to keep it secure."] },
+    { h:"Contact", body:["For any privacy-related question or request, contact kankaassociates21@gmail.com."] },
+  ]} />;
+}
+
+function RefundPage() {
+  return <LegalLayout kicker="RETURNS & REFUNDS" title="Refund & Cancellation Policy" sections={[
+    { h:"Return window", body:["You may request a return within 5 days of receiving your order."] },
+    { h:"Return conditions", body:["Items must be returned unused, with all tags attached and in their original packaging. Returns that do not meet these conditions may not be accepted."] },
+    { h:"Non-returnable items", body:["T-shirts are non-returnable, except where they arrive damaged, defective, or where the wrong item was sent."] },
+    { h:"Damaged, defective or wrong items", body:["If you receive a product that is damaged, defective or incorrect, please contact us within 5 days of delivery at kankaassociates21@gmail.com or +91 9597694748, with your order number and photographs of the item. Returns are accepted only in these cases, and for other eligible items within the return window and conditions above."] },
+    { h:"Return shipping", body:["Return shipping charges are borne by the customer, except where the item was damaged, defective or wrongly sent."] },
+    { h:"Refunds", body:["Once your returned item is received and inspected, we confirm whether it qualifies for a refund. If approved, the refund is initiated to your original payment method via Razorpay within 7 business days of approval. The time for the amount to reflect in your account depends on your bank or payment provider."] },
+    { h:"Order cancellation", body:["You may cancel your order before it is dispatched. Once an order has been dispatched, it can no longer be cancelled. To cancel, contact us as soon as possible at kankaassociates21@gmail.com or +91 9597694748 with your order number."] },
+  ]} />;
+}
+
+function ShippingPage() {
+  return <LegalLayout kicker="SHIPPING & DELIVERY" title="Shipping Policy" sections={[
+    { h:"Where we ship", body:["We ship across India and internationally."] },
+    { h:"Shipping charges", body:["A flat shipping charge of ₹150 applies to every order. The shipping charge is shown at checkout before you pay."] },
+    { h:"Dispatch time", body:["Orders are dispatched within 3–5 business days of a confirmed order."] },
+    { h:"Estimated delivery time", body:["Delivery typically takes 7–14 business days after dispatch, depending on your location. International deliveries may take longer due to customs and local handling."] },
+    { h:"Courier and tracking", body:["Deliveries are handled through our courier partners. Once your order is dispatched, we share your tracking details over WhatsApp on the phone number provided at checkout."] },
+    { h:"Delays", body:["We are not responsible for delays caused by the courier, customs clearance, or other circumstances beyond our reasonable control, but we will help you follow up wherever possible."] },
+  ]} />;
+}
+
+Object.assign(window, { AboutPage, ContactPage, TermsPage, PrivacyPage, RefundPage, ShippingPage });
 
 })();
   </script>
@@ -4442,6 +4531,7 @@ const { useState, useEffect, useCallback } = React;
 const {
   CartContext, AppContext,
   HomePage, ListingPage, DetailPage, CartPage, CheckoutPage, AboutPage, ContactPage,
+  TermsPage, PrivacyPage, RefundPage, ShippingPage,
   LoginPage, SignupPage, ForgotPasswordPage,
   AccountPage, OrdersPage, AddressesPage, ProfilePage,
   MobileBottomNav,
@@ -4630,6 +4720,10 @@ function App() {
       case "checkout":  return <CheckoutPage />;
       case "about":     return <AboutPage />;
       case "contact":   return <ContactPage />;
+      case "terms":     return <TermsPage />;
+      case "privacy":   return <PrivacyPage />;
+      case "refund":    return <RefundPage />;
+      case "shipping":  return <ShippingPage />;
       case "login":     return <LoginPage />;
       case "signup":    return <SignupPage />;
       case "forgot":    return <ForgotPasswordPage />;
