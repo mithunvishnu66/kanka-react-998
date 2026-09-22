@@ -198,10 +198,13 @@ export async function buildQuote({ items: rawItems, discountCode, shippingMethod
   const discount = await validateDiscount(discountCode, subtotalPaise);
   const discountedPaise = subtotalPaise - discount.discountPaise;
 
-  /* Flat shipping charge on every order (₹150). Whatever the browser sends
-     for shippingMethod is ignored — the server is the single source of truth
-     for what's charged. To change the shipping price, change this one line. */
-  const shippingPaise = toPaise(150);
+  /* Shipping: free when the subtotal (before discount) is ₹4,000 or more,
+     otherwise a flat ₹150. Whatever the browser sends for shippingMethod is
+     ignored — the server is the single source of truth for what's charged.
+     Keep in step with window.SHIP in index.html. */
+  const FREE_SHIPPING_FROM = 4000;
+  const SHIPPING_FEE       = 150;
+  const shippingPaise = subtotalPaise >= toPaise(FREE_SHIPPING_FROM) ? 0 : toPaise(SHIPPING_FEE);
 
   /* GST is charged on the discounted goods value, not on shipping. */
   const taxPaise   = Math.round(discountedPaise * PRICING.GST_RATE);
@@ -216,8 +219,8 @@ export async function buildQuote({ items: rawItems, discountCode, shippingMethod
     subtotalPaise,
     discountPaise: discount.discountPaise,
     discountCode:  discount.discountPaise > 0 ? discount.code : null,
-    shippingMethod: "standard",
-    shippingLabel:  "Standard Shipping",
+    shippingMethod: shippingPaise === 0 ? "free" : "standard",
+    shippingLabel:  shippingPaise === 0 ? "Free Shipping" : "Standard Shipping",
     shippingPaise,
     taxPaise,
     totalPaise,
