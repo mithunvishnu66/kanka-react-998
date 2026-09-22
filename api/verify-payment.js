@@ -54,8 +54,10 @@ export default async function handler(req, res) {
           HMAC_SHA256(order_id + "|" + payment_id, KEY_SECRET) */
     if (!verifyCheckoutSignature({ orderId, paymentId, signature })) {
       console.warn("[kanka] signature mismatch", { orderId, paymentId });
-      /* Flag it, but do NOT fulfil anything. */
-      await db.update("orders", eqFilter("razorpay_order_id", orderId), {
+      /* Flag it, but do NOT fulfil anything. Only a still-pending order is
+         flagged: overwriting a PAID order's status here used to let a
+         valid replay fulfil it a second time (double stock decrement). */
+      await db.update("orders", `${eqFilter("razorpay_order_id", orderId)}&payment_status=eq.pending`, {
         payment_status: "signature_failed",
       }).catch(() => {});
       return json(res, 400, { error: "Payment could not be verified.", verified: false });
