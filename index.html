@@ -4674,7 +4674,8 @@ function mountKanka() {
     document.getElementById("root").innerHTML =
       '<div style="padding:40px;text-align:center;font-family:Jost,sans-serif;color:#C0392B">' +
       'Something went wrong. Please refresh the page.<br><br>' +
-      '<small>' + e.message + '</small></div>';
+      '<small></small></div>';
+    document.querySelector("#root small").textContent = e.message;
   }
   /* Hold until the letter stagger and rule finish, then lift the whole
      panel upward to reveal the page. */
