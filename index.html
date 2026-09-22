@@ -1960,7 +1960,7 @@ function FilterSidebar({ filters, setFilters, onClose, isMobile }) {
         <span style={{ fontFamily:"Cormorant Garamond, serif", fontSize:20, fontWeight:500, color:"#1A1008" }}>Filter</span>
         <div style={{ display:"flex", gap:12, alignItems:"center" }}>
           {Object.values(filters).some(v => Array.isArray(v) ? v.length>0 : false) && (
-            <button onClick={() => setFilters({ categories:[], colors:[], sizes:[], priceMax:12000 })}
+            <button onClick={() => setFilters({ categories:[], colors:[], sizes:[], lengths:[], priceMax:12000 })}
               style={{ background:"none", border:"none", cursor:"pointer", fontFamily:"Jost", fontSize:11, color:"#C5A468", letterSpacing:"0.08em" }}>
               CLEAR ALL
             </button>
@@ -1987,6 +1987,31 @@ function FilterSidebar({ filters, setFilters, onClose, isMobile }) {
           </button>
         ))}
       </div>
+
+      {/* Kurtha length — only relevant inside Kurthas */}
+      {filters.categories.includes("kurta") && (
+        <div style={sectionStyle}>
+          <span style={labelStyle}>LENGTH</span>
+          {[["short","Short Kurthas"],["long","Long Kurthas"]].map(([id,label]) => {
+            const active = (filters.lengths||[]).includes(id);
+            const count = window.PRODUCTS.filter(p => p.category==="kurta" && (p.tags||[]).map(t=>String(t).toLowerCase()).includes(id)).length;
+            return (
+              <button key={id} onClick={() => toggle("lengths", id)}
+                style={{
+                  display:"flex", justifyContent:"space-between", alignItems:"center",
+                  width:"100%", background:"none", border:"none", cursor:"pointer",
+                  fontFamily:"Jost", fontSize:13,
+                  color: active ? "#1A1008" : "#8C7B6E",
+                  fontWeight: active ? 600 : 400,
+                  padding:"6px 0", transition:"color 0.2s",
+                }}>
+                <span>{label}</span>
+                <span style={{ fontSize:11, color:"#B8A99A" }}>{count}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Price */}
       <div style={sectionStyle}>
@@ -2099,6 +2124,7 @@ function ListingPage() {
     categories: initFilter !== "all" && initFilter !== "collection" && initFilter !== "sale" && initFilter !== "new"
       ? [initFilter] : [],
     sizes: [],
+    lengths: [],
     tags: initFilter === "sale" ? ["sale"] : initFilter === "new" ? ["new"] : [],
     priceMax: 12000,
   });
@@ -2112,6 +2138,8 @@ function ListingPage() {
     let p = [...window.PRODUCTS];
     if (search) p = p.filter(x => (x.name || "").toLowerCase().includes(search.toLowerCase()));
     if (filters.categories.length) p = p.filter(x => filters.categories.includes(x.category));
+    if (filters.lengths && filters.lengths.length)
+      p = p.filter(x => filters.lengths.some(l => (x.tags||[]).map(t=>String(t).toLowerCase()).includes(l)));
     if (filters.tags && filters.tags.length) p = p.filter(x => filters.tags.some(t => x.tags.includes(t)));
     p = p.filter(x => x.price <= filters.priceMax);
     if (sort === "price-asc")  p.sort((a,b) => a.price - b.price);
