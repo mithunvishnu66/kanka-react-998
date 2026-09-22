@@ -2564,16 +2564,6 @@ function ProductInfo({ product, onAddedChange }) {
         marginBottom:24, transition:"all 0.2s",
       }}>BUY NOW</button>
 
-      {/* Trust badges */}
-      <div style={{ display:"flex", gap:20, marginBottom:28, flexWrap:"wrap" }}>
-        {[["↩","Free 30-day returns"],["🔒","Secure checkout"],["✈","Free shipping"]].map(([icon,label],i) => (
-          <div key={i} style={{ display:"flex", alignItems:"center", gap:6 }}>
-            <span style={{ fontSize:14 }}>{icon}</span>
-            <span style={{ fontFamily:"Jost", fontSize:11, color:"#8C7B6E" }}>{label}</span>
-          </div>
-        ))}
-      </div>
-
       {/* Accordions */}
       <Accordion title="PRODUCT DETAILS">
         <ul style={{ paddingLeft:0, listStyle:"none" }}>
@@ -2791,7 +2781,7 @@ function CartItem({ item }) {
 
 function OrderSummary({ onCheckout }) {
   const { cart, cartTotal } = useCart();
-  const shipping = 0;  /* free shipping on all orders */
+  const shipping = 150;  /* flat shipping on all orders */
   const tax      = cartTotal * 0.05;
   const total    = cartTotal + shipping + tax;
 
@@ -3063,7 +3053,7 @@ function StepInfo({ data, setData, onNext }) {
 /* ─── Step 2: Shipping ──────────────────────────────────────────── */
 function StepShipping({ selected, setSelected, onNext, onBack }) {
   const opts = [
-    { id:"standard", label:"Free Shipping", sub:"Delivered in 3–7 business days", price: "Free", note:"On all orders" },
+    { id:"standard", label:"Standard Shipping", sub:"Delivered in 7–14 business days", price: "₹150", note:"Flat rate, all orders" },
   ];
   return (
     <div>
@@ -3164,7 +3154,7 @@ function CheckoutSummary({ shipping: shippingProp }) {
   const [promo] = useState(() => {
     try { return JSON.parse(localStorage.getItem("kanka_discount") || "null"); } catch { return null; }
   });
-  const shipping = 0;  /* free shipping on all orders */
+  const shipping = 150;  /* flat shipping on all orders */
   const discount = Math.min(Number(promo?.discount || 0), cartTotal);
   const taxable  = cartTotal - discount;
   const total    = taxable + shipping + taxable * 0.05;
@@ -3772,7 +3762,7 @@ function RefundPage() {
 function ShippingPage() {
   return <LegalLayout kicker="SHIPPING & DELIVERY" title="Shipping Policy" sections={[
     { h:"Where we ship", body:["We ship across India and internationally."] },
-    { h:"Shipping charges", body:["Shipping is charged on all orders, and the amount depends on your delivery location (within India and abroad). The applicable shipping charge is shown at checkout before you pay."] },
+    { h:"Shipping charges", body:["A flat shipping charge of ₹150 applies to every order. The shipping charge is shown at checkout before you pay."] },
     { h:"Dispatch time", body:["Orders are dispatched within 3–5 business days of a confirmed order."] },
     { h:"Estimated delivery time", body:["Delivery typically takes 7–14 business days after dispatch, depending on your location. International deliveries may take longer due to customs and local handling."] },
     { h:"Courier and tracking", body:["Deliveries are handled through our courier partners. Once your order is dispatched, we share your tracking details over WhatsApp on the phone number provided at checkout."] },
