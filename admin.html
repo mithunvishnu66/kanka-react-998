@@ -710,7 +710,7 @@ function renderCustomers(wrap, q) {
     const row = el("div"); row.className = "table-row";
     row.innerHTML = `
       <div style="display:flex;align-items:center;gap:13px;flex:1;min-width:0;">
-        <div style="width:42px;height:42px;border-radius:50%;flex-shrink:0;background:${c.avatarBg};color:#FAF9F7;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;">${c.name.charAt(0)}</div>
+        <div style="width:42px;height:42px;border-radius:50%;flex-shrink:0;background:${c.avatarBg};color:#FAF9F7;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;">${esc(c.name.charAt(0))}</div>
         <div style="min-width:0;">
           <p style="font-family:'Jost';font-size:14px;font-weight:600;color:#1A1008;display:flex;align-items:center;gap:7px;">${esc(c.name)}${c.isAdmin?`<span style="font-family:'Jost';font-size:9px;font-weight:600;letter-spacing:0.1em;color:#C5A468;border:1px solid #E3D2AE;padding:1px 6px;border-radius:999px;">OWNER</span>`:""}</p>
           <p style="font-family:'Jost';font-size:12px;color:#A89684;">${esc(c.contact)}</p>
@@ -766,7 +766,7 @@ function renderProducts(wrap, q) {
     else if(sold){bLabel="Sold out";bC="#B23A2A";bBg="rgba(246,228,224,0.95)";}
     else if(low){bLabel="Low stock";bC="#9A7B2E";bBg="rgba(244,236,215,0.95)";}
     const img = p.images[0]?.url;
-    const thumbStyle = img ? `background-image:url('${img}');background-size:cover;background-position:center;` : `background:linear-gradient(150deg,#D8CDBD,#C2AE93);`;
+    const thumbStyle = img ? `background-image:url('${escAttr(String(img).replace(/'/g,"%27"))}');background-size:cover;background-position:center;` : `background:linear-gradient(150deg,#D8CDBD,#C2AE93);`;
     const card = el("div",{onclick:()=>openProductEditor(p)}); card.className = "prod-card"; card.style.cursor="pointer";
     card.innerHTML = `
       <div style="height:168px;${thumbStyle}position:relative;display:flex;align-items:flex-end;justify-content:space-between;padding:14px;">
@@ -774,8 +774,8 @@ function renderProducts(wrap, q) {
         <button class="del-prod-btn" style="width:28px;height:28px;border-radius:50%;border:none;background:rgba(26,16,8,0.55);color:#FAF9F7;font-size:13px;backdrop-filter:blur(4px);">✕</button>
       </div>
       <div style="padding:16px 16px 18px;">
-        <p style="font-family:'Jost';font-size:9.5px;font-weight:600;letter-spacing:0.13em;color:#A89684;margin-bottom:6px;">${(CATEGORY_LABELS[p.category]||p.category||"").toUpperCase()}</p>
-        <p style="font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:500;color:#1A1008;line-height:1.05;margin-bottom:12px;">${p.name}</p>
+        <p style="font-family:'Jost';font-size:9.5px;font-weight:600;letter-spacing:0.13em;color:#A89684;margin-bottom:6px;">${esc((CATEGORY_LABELS[p.category]||p.category||"").toUpperCase())}</p>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:500;color:#1A1008;line-height:1.05;margin-bottom:12px;">${esc(p.name)}</p>
         <div style="display:flex;align-items:center;justify-content:space-between;">
           <span style="font-family:'Jost';font-size:15px;font-weight:500;color:#1A1008;">${money(p.price)}</span>
           <span style="font-family:'Jost';font-size:12px;color:${sold||draft?"#A89684":low?"#9A7B2E":"#6B5744"};">${draft?"Unpublished":sold?"0 in stock":p.totalStock+" in stock"}</span>
@@ -861,7 +861,7 @@ function renderProductPanel() {
       <div style="display:flex;align-items:flex-start;justify-content:space-between;">
         <div>
           <p style="font-family:'Jost';font-size:10px;font-weight:600;letter-spacing:0.16em;color:#C5A468;margin-bottom:8px;">${d.isNew?"NEW PRODUCT":"EDIT PRODUCT"}</p>
-          <h2 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:#FAF9F7;line-height:1.1;">${d.name || "Untitled style"}</h2>
+          <h2 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:#FAF9F7;line-height:1.1;">${esc(d.name || "Untitled style")}</h2>
         </div>
         <button id="close-panel" style="width:36px;height:36px;border-radius:50%;background:rgba(250,249,247,0.1);border:none;color:#FAF9F7;font-size:16px;cursor:pointer;flex-shrink:0;">✕</button>
       </div>
@@ -1058,7 +1058,7 @@ function renderImageRow() {
   row.innerHTML = "";
   d.images.forEach((img, i) => {
     const wrap = el("div",{style:{position:"relative"}});
-    wrap.innerHTML = `<img src="${img.url}" class="img-thumb" />
+    wrap.innerHTML = `<img src="${escAttr(img.url)}" class="img-thumb" />
       <button style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#1A1008;color:#FAF9F7;border:none;font-size:10px;">✕</button>`;
     wrap.querySelector("button").addEventListener("click", async () => {
       if (img.path) await deleteProductImageFile(img.path);
@@ -1275,7 +1275,7 @@ function renderPanel(o) {
           const p = PRODUCTS.find(pp => pp.name === it[0]);
           const img = p && p.images && p.images[0] ? p.images[0].url : null;
           const thumb = img
-            ? `background-image:url('${img}');background-size:cover;background-position:center;`
+            ? `background-image:url('${escAttr(String(img).replace(/'/g,"%27"))}');background-size:cover;background-position:center;`
             : `background:${p?p.swatch:"#D8CDBD"};`;
           return `<div style="display:flex;align-items:center;gap:13px;padding:8px 0;border-bottom:1px solid #EFE8DD;">
             <div style="width:42px;height:50px;border-radius:6px;flex-shrink:0;${thumb}"></div>
