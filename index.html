@@ -553,7 +553,8 @@ window.loadKankaData = async function loadKankaData() {
     { id:"kurta",  label:"Kurta",       count: counts.kurta  || 0 },
     { id:"tshirt", label:"T-Shirt",     count: counts.tshirt || 0 },
     { id:"dhoti",  label:"Dhoti Pant",  count: counts.dhoti  || 0 },
-  ];
+  ].filter(c => c.id === "all" || c.count > 0);   /* empty categories stay hidden until products are added */
+  window.hasCategory = id => id === "all" || (window.PRODUCTS || []).some(p => p.category === id);
 
   console.log(`[Kanka] ✓ Loaded ${window.PRODUCTS.length} products from Supabase`);
   return true;
@@ -804,6 +805,7 @@ window.auth = {
    Logged in:    cart syncs to Supabase cart_items table
    On login:     guest cart merges into account cart                    */
 
+window.fmtINR = n => { const v = Math.round(Number(n || 0) * 100) / 100; return "₹" + v.toLocaleString("en-IN", { minimumFractionDigits: Number.isInteger(v) ? 0 : 2, maximumFractionDigits: 2 }); };
 const CART_KEY = "kanka_cart";
 
 window.cartStore = {
@@ -1092,7 +1094,7 @@ function ProductCard({ product }) {
         <h3 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 18, fontWeight: 500, color: "#1A1008", lineHeight: 1.25, marginBottom: 6 }}>
           {product.name}
         </h3>
-        <StarRating rating={product.rating} size={12} />
+        {product.reviewCount > 0 && <StarRating rating={product.rating} size={12} />}
         <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontFamily: "Jost", fontSize: 15, fontWeight: 500, color: "#1A1008" }}>₹{product.price.toLocaleString("en-IN")}</span>
           {product.originalPrice && product.originalPrice > product.price && <>
@@ -1170,10 +1172,10 @@ function Navbar({ transparent = false, noSearch = false, overlay = false }) {
   const suggestions = window.kkSuggest ? window.kkSuggest(query, 5) : [];
 
   const navLinks = [
-  { label: "NEW IN", filter: "new" },
-  { label: "DRESSES", filter: "all" },
-  { label: "COLLECTIONS", filter: "collection" },
-  { label: "SALE", filter: "sale" }];
+  { label: "SHOP ALL", filter: "all" },
+  { label: "KURTAS", filter: "kurta" },
+  { label: "DHOTI PANTS", filter: "dhoti" },
+  { label: "T-SHIRTS", filter: "tshirt" }].filter(l => !window.hasCategory || window.hasCategory(l.filter));
 
 
   const iconColor = "#1A1008";
@@ -1242,7 +1244,7 @@ function Navbar({ transparent = false, noSearch = false, overlay = false }) {
               }
               if (e.key === "Escape") { setSearchOpen(false);setQuery(""); }
             }}
-            placeholder="Search dresses, styles, fabrics…"
+            placeholder="Search kurtas, dhoti pants, fabrics…"
             style={{
               flex: 1, minWidth: 0, border: "none", background: "transparent", outline: "none",
               fontFamily: "Jost", fontSize: 14, letterSpacing: "0.02em", color: "#1A1008"
@@ -1392,9 +1394,9 @@ function Footer() {
   const [signed, setSigned] = useState(false);
 
   const cols = [
-  { title: "SHOP", links: ["New Arrivals", "Kurtas", "T-Shirts", "Dhoti Pants", "Sale"] },
-  { title: "HELP", links: ["Size Guide", "Shipping", "Returns", "Care Guide", "FAQ"] },
-  { title: "COMPANY", links: ["About", "Sustainability", "Careers", "Press", "Contact"] }];
+  { title: "SHOP", links: ["Shop All", "Kurtas", "Dhoti Pants", "T-Shirts"].filter(l => !window.hasCategory || window.hasCategory({ "Kurtas":"kurta", "Dhoti Pants":"dhoti", "T-Shirts":"tshirt" }[l] || "all")) },
+  { title: "HELP", links: ["Shipping", "Returns", "Contact"] },
+  { title: "COMPANY", links: ["About", "Terms", "Privacy"] }];
 
 
   return (
@@ -1447,16 +1449,9 @@ function Footer() {
               <p style={{ fontFamily: "Jost", fontSize: 13, lineHeight: 1.75, maxWidth: 260, marginBottom: 24 }}>
                 Traditional Indian menswear, made with care. Classic pieces crafted from quality fabrics for everyday wear and occasions.
               </p>
-              <div style={{ display: "flex", gap: 10 }}>
-                {[<IconInstagram />, "FB", "PT"].map((s, i) =>
-                <button key={i} style={{
-                  background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)",
-                  color: "#FAF9F7", width: 36, height: 36, borderRadius: "50%", cursor: "pointer",
-                  fontFamily: "Jost", fontSize: 10, fontWeight: 600, letterSpacing: "0.05em",
-                  display: "flex", alignItems: "center", justifyContent: "center"
-                }}>{s}</button>
-                )}
-              </div>
+              <p style={{ fontFamily: "Jost", fontSize: 12.5, lineHeight: 1.8, margin: 0 }}>
+                +91 9597694748<br/>kankaassociates21@gmail.com<br/>Salem, Tamil Nadu
+              </p>
             </div>
             {cols.map((col) =>
             <div key={col.title}>
@@ -1468,6 +1463,11 @@ function Footer() {
                   if (l === "Contact") navigate("contact");else
                   if (l === "Shipping") navigate("shipping");else
                   if (l === "Returns") navigate("refund");else
+                  if (l === "Terms") navigate("terms");else
+                  if (l === "Privacy") navigate("privacy");else
+                  if (l === "Kurtas") navigate("listing", { listFilter: "kurta" });else
+                  if (l === "Dhoti Pants") navigate("listing", { listFilter: "dhoti" });else
+                  if (l === "T-Shirts") navigate("listing", { listFilter: "tshirt" });else
                   navigate("listing", { listFilter: "all" });
                 }} />
                 )}
@@ -1665,7 +1665,7 @@ function Hero() {
 
 /* ─── Ticker ────────────────────────────────────────────────────── */
 function Ticker() {
-  const items = ["FREE SHIPPING OVER ₹5,000","COMPLIMENTARY RETURNS","SECURE CHECKOUT","CRAFTED WITH CARE","CRAFTED IN INDIA","NEW ARRIVALS NOW LIVE"];
+  const items = ["FLAT ₹150 SHIPPING","EASY 5-DAY RETURNS","SECURE CHECKOUT","CRAFTED WITH CARE","CRAFTED IN INDIA","NEW ARRIVALS NOW LIVE"];
   const text = [...items, ...items].join("   ·   ");
   return (
     <div style={{ background:"#1A1008", padding:"13px 0", overflow:"hidden" }}>
@@ -1679,7 +1679,7 @@ function Ticker() {
 /* ─── Collections ───────────────────────────────────────────────── */
 function Collections() {
   const { navigate } = useApp();
-  const cols = window.COLLECTIONS;
+  const cols = window.COLLECTIONS.filter(c => !window.hasCategory || window.hasCategory(c.filter));
   return (
     <section className="section" style={{ background:"#FAF9F7" }}>
       <div className="container">
@@ -1752,7 +1752,7 @@ function TrendingSection() {
             fontFamily:"Jost", fontSize:12, fontWeight:500, letterSpacing:"0.12em",
             color:"#8C7B6E", textDecoration:"underline", textUnderlineOffset:4,
             whiteSpace:"nowrap",
-          }}>View All Dresses</button>
+          }}>View All</button>
         </div>
         <div className="grid-4">
           {trending.map(p => <ProductCard key={p.id} product={p} />)}
@@ -1776,7 +1776,7 @@ function BestSellers() {
         </div>
         <div style={{ textAlign:"center", marginTop:40 }}>
           <PrimaryBtn outline onClick={() => navigate("listing",{listFilter:"all"})}>
-            SHOP ALL DRESSES <IconArrowRight size={16}/>
+            SHOP ALL <IconArrowRight size={16}/>
           </PrimaryBtn>
         </div>
       </div>
@@ -1891,10 +1891,10 @@ function InstaPhoto({ src }) {
 /* ─── Brand Values strip ────────────────────────────────────────── */
 function ValuesStrip() {
   const vals = [
-    { icon:"✦", title:"Premium Quality", desc:"Only the finest fabrics sourced globally" },
-    { icon:"♻", title:"Sustainable",     desc:"Crafted with the planet in mind" },
-    { icon:"↩", title:"Free Returns",    desc:"30-day no-hassle return policy" },
-    { icon:"⚡", title:"Fast Delivery",  desc:"Express shipping in 1–3 business days" },
+    { icon:"✦", title:"Quality Fabrics", desc:"Four generations of weaving craft" },
+    { icon:"♻", title:"Made in India",   desc:"Crafted in Salem, Tamil Nadu" },
+    { icon:"↩", title:"Easy Returns",    desc:"5-day return window" },
+    { icon:"⚡", title:"Flat ₹150 Shipping", desc:"Delivered in 7–14 business days" },
   ];
   return (
     <div style={{ background:"#F7F3EE", borderTop:"1px solid #EDE8E0", borderBottom:"1px solid #EDE8E0" }}>
@@ -1921,7 +1921,6 @@ function HomePage() {
       <TrendingSection />
       <Testimonials />
       <BestSellers />
-      <InstagramGallery />
       <Footer />
     </div>
   );
@@ -2132,7 +2131,8 @@ function ListingPage() {
   const [mobileFilters, setMobileFilters] = useState(false);
   const [search,     setSearch]     = useState(initSearch);
 
-  const heading = initFilter === "sale" ? "Sale" : initFilter === "new" ? "New Arrivals" : "All Dresses";
+  const heading = initFilter === "sale" ? "Sale" : initFilter === "new" ? "New Arrivals"
+    : ((window.CATEGORIES || []).find(c => c.id === initFilter && c.id !== "all")?.label || "All Products");
 
   const filtered = useMemo(() => {
     let p = [...window.PRODUCTS];
@@ -2446,12 +2446,12 @@ function ProductInfo({ product, onAddedChange }) {
       </h1>
 
       {/* Rating */}
-      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
+      {product.reviewCount > 0 && <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
         <StarRating rating={product.rating} size={14} />
         <span style={{ fontFamily:"Jost", fontSize:12, color:"#8C7B6E" }}>
           {product.rating} ({product.reviewCount} reviews)
         </span>
-      </div>
+      </div>}
 
       {/* Price */}
       <div style={{ display:"flex", alignItems:"baseline", gap:12, marginBottom:20 }}>
@@ -2576,8 +2576,8 @@ function ProductInfo({ product, onAddedChange }) {
       </Accordion>
       <Accordion title="SHIPPING & RETURNS">
         <p style={{ fontFamily:"Jost", fontSize:13, color:"#6B5744", lineHeight:1.75 }}>
-          Standard shipping (3–5 days) is complimentary on orders over ₹5,000. Express shipping (1–2 days) available at checkout.
-          Returns are accepted within 30 days of delivery. Items must be unworn with tags attached.
+          Flat ₹150 shipping on every order. Orders are dispatched within 3–5 business days and delivered in 7–14 business days.
+          Returns are accepted within 5 days of delivery — items must be unused, with tags attached and in original packaging. T-shirts are non-returnable unless damaged, defective or wrong.
         </p>
       </Accordion>
       <Accordion title="CARE GUIDE">
@@ -2788,7 +2788,7 @@ function OrderSummary({ onCheckout }) {
   const rows = [
     ["Subtotal",  `₹${cartTotal.toLocaleString("en-IN")}`],
     ["Shipping",  shipping === 0 ? "Free" : `₹${shipping.toLocaleString("en-IN")}`],
-    ["GST (5%)",  `₹${tax.toLocaleString("en-IN")}`],
+    ["GST (5%)",  window.fmtINR(tax)],
   ];
 
   return (
@@ -2807,7 +2807,7 @@ function OrderSummary({ onCheckout }) {
       )}
       <div style={{ borderTop:"1px solid #E8E0D5", paddingTop:16, marginTop:8, display:"flex", justifyContent:"space-between", marginBottom:24 }}>
         <span style={{ fontFamily:"Jost", fontSize:14, fontWeight:600, letterSpacing:"0.05em", color:"#1A1008" }}>TOTAL</span>
-        <span style={{ fontFamily:"Cormorant Garamond, serif", fontSize:22, fontWeight:600, color:"#1A1008" }}>₹{total.toLocaleString("en-IN")}</span>
+        <span style={{ fontFamily:"Cormorant Garamond, serif", fontSize:22, fontWeight:600, color:"#1A1008" }}>{window.fmtINR(total)}</span>
       </div>
 
       {/* Promo code */}
@@ -3025,7 +3025,7 @@ function StepInfo({ data, setData, onNext }) {
       <div style={{ display:"flex", flexWrap:"wrap", gap:16 }}>
         <Field label="First Name" half value={data.firstName} onChange={v=>setData(d=>({...d,firstName:v}))} required />
         <Field label="Last Name" half value={data.lastName} onChange={v=>setData(d=>({...d,lastName:v}))} required />
-        <Field label="Address" value={data.address} onChange={v=>setData(d=>({...d,address:v}))} placeholder="123 Fashion Avenue" required />
+        <Field label="Address" value={data.address} onChange={v=>setData(d=>({...d,address:v}))} placeholder="Door no., street, area" required />
         <Field label="Apartment / Suite" value={data.apt} onChange={v=>setData(d=>({...d,apt:v}))} placeholder="Apt, suite, unit (optional)" />
         <Field label="City" half value={data.city} onChange={v=>setData(d=>({...d,city:v}))} required />
         <Field label="State" half value={data.state} onChange={v=>setData(d=>({...d,state:v}))} placeholder="Tamil Nadu" required />
@@ -3116,7 +3116,7 @@ function StepPayment({ onPlace, onBack, loading, error, total }) {
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
           <span style={{ fontFamily:"Jost", fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#6B5744" }}>AMOUNT DUE</span>
           <span style={{ fontFamily:"Cormorant Garamond, serif", fontSize:26, fontWeight:600, color:"#1A1008" }}>
-            ₹{Number(total || 0).toLocaleString("en-IN")}
+            {window.fmtINR(total)}
           </span>
         </div>
         {["Verified by Razorpay — PCI-DSS Level 1","Your bag is held until payment completes","Cancel any time; nothing is charged until you confirm"].map((t,i) => (
@@ -3180,7 +3180,7 @@ function CheckoutSummary({ shipping: shippingProp }) {
         {[["Subtotal", `₹${cartTotal.toLocaleString("en-IN")}`],
           ...(discount > 0 ? [[`Discount (${promo.code})`, `−₹${discount.toLocaleString("en-IN")}`]] : []),
           ["Shipping", shipping===0?"Free":`₹${shipping.toLocaleString("en-IN")}`],
-          ["GST (5%)", `₹${Math.round(taxable*0.05).toLocaleString("en-IN")}`]].map(([l,v]) => (
+          ["GST (5%)", window.fmtINR(taxable*0.05)]].map(([l,v]) => (
           <div key={l} style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
             <span style={{ fontFamily:"Jost", fontSize:12, color:"#8C7B6E" }}>{l}</span>
             <span style={{ fontFamily:"Jost", fontSize:12, color: l==="Shipping"&&shipping===0?"#C5A468":"#1A1008", fontWeight:500 }}>{v}</span>
@@ -3188,7 +3188,7 @@ function CheckoutSummary({ shipping: shippingProp }) {
         ))}
         <div style={{ display:"flex", justifyContent:"space-between", borderTop:"1px solid #E8E0D5", paddingTop:14, marginTop:8 }}>
           <span style={{ fontFamily:"Jost", fontSize:13, fontWeight:700 }}>Total</span>
-          <span style={{ fontFamily:"Cormorant Garamond, serif", fontSize:20, fontWeight:600 }}>₹{Math.round(total).toLocaleString("en-IN")}</span>
+          <span style={{ fontFamily:"Cormorant Garamond, serif", fontSize:20, fontWeight:600 }}>{window.fmtINR(total)}</span>
         </div>
       </div>
     </div>
@@ -3289,8 +3289,11 @@ function CheckoutPage() {
   /* Displayed total — indicative only. The server recomputes it and
      the Razorpay popup shows the authoritative amount. */
   const cartTotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
-  const shipCost  = 0;  /* free shipping on all orders */
-  const shownTotal = Math.round(cartTotal + shipCost + cartTotal * 0.05);
+  const shipCost  = 150;  /* flat shipping on all orders */
+  const promoSaved = (() => { try { return JSON.parse(localStorage.getItem("kanka_discount") || "null"); } catch { return null; } })();
+  const discountAmt = Math.min(Number(promoSaved?.discount || 0), cartTotal);
+  const taxableAmt  = cartTotal - discountAmt;
+  const shownTotal = Math.round((taxableAmt + shipCost + taxableAmt * 0.05) * 100) / 100;
 
   async function placeOrder() {
     if (loading) return;
@@ -3553,7 +3556,10 @@ function ContactPage() {
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (form.name && form.email && form.message) setSent(true);
+    if (!(form.name && form.email && form.message)) return;
+    const body = `Name: ${form.name}\nEmail: ${form.email}\n\n${form.message}`;
+    window.location.href = `mailto:kankaassociates21@gmail.com?subject=${encodeURIComponent("[Kanka] " + form.subject)}&body=${encodeURIComponent(body)}`;
+    setSent(true);
   }
 
   const inputStyle = (field) => ({
@@ -4446,7 +4452,7 @@ function MobileSearchDrawer({ open, onClose }) {
             autoFocus
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Search for dresses, colors, styles…"
+            placeholder="Search kurtas, dhoti pants, colours…"
             style={{
               width: "100%", fontFamily: "Jost", fontSize: 16,
               padding: "14px 18px",
