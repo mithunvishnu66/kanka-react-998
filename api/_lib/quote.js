@@ -80,6 +80,7 @@ export async function validateDiscount(rawCode, subtotalPaise) {
      several naming conventions, so we accept all of them. */
   const isActive  = row.is_active ?? row.active ?? true;
   const expiresAt = row.expires_at ?? row.valid_until ?? row.expiry ?? null;
+  const startsAt  = row.starts_at ?? row.valid_from ?? null;
   const maxUses   = row.max_uses ?? row.usage_limit ?? null;
   const usedCount = row.used_count ?? row.times_used ?? row.usage_count ?? 0;
   const minOrder  = row.min_order_amount ?? row.min_order ?? row.minimum_amount ?? 0;
@@ -103,6 +104,9 @@ export async function validateDiscount(rawCode, subtotalPaise) {
 
   if (!isActive) {
     throw new QuoteError("That promo code is no longer active.", "DISCOUNT_INACTIVE");
+  }
+  if (startsAt && new Date(startsAt).getTime() > Date.now()) {
+    throw new QuoteError("That promo code isn't active yet.", "DISCOUNT_NOT_STARTED");
   }
   if (expiresAt && new Date(expiresAt).getTime() < Date.now()) {
     throw new QuoteError("That promo code has expired.", "DISCOUNT_EXPIRED");
