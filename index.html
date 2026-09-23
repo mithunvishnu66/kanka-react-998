@@ -1453,6 +1453,10 @@ function Footer() {
               <p style={{ fontFamily: "Jost", fontSize: 12.5, lineHeight: 1.8, margin: 0 }}>
                 +91 9597694748<br/>kankaassociates21@gmail.com<br/>Salem, Tamil Nadu
               </p>
+              <a href="https://www.instagram.com/kanka_clothing?stkn=bGN1bzI4eGcyZnZv" target="_blank" rel="noopener noreferrer"
+                style={{ display:"inline-flex", alignItems:"center", gap:8, marginTop:16, fontFamily:"Jost", fontSize:12.5, color:"#C5A468", textDecoration:"none" }}>
+                <IconInstagram size={18} /> @kanka_clothing
+              </a>
             </div>
             {cols.map((col) =>
             <div key={col.title}>
@@ -1860,7 +1864,13 @@ function InstagramGallery() {
               @kanka_clothing
             </h2>
           </a>
-          <p style={{ fontFamily:"Jost", fontSize:12, color:"#8C7B6E" }}>Follow us for styling inspiration &amp; new arrivals</p>
+          <p style={{ fontFamily:"Jost", fontSize:12, color:"#8C7B6E", marginBottom:32 }}>Follow us for styling inspiration &amp; new arrivals</p>
+        </div>
+        <div style={{ textAlign:"center" }}>
+          <a href="https://www.instagram.com/kanka_clothing?stkn=bGN1bzI4eGcyZnZv" target="_blank" rel="noopener noreferrer"
+            style={{ display:"inline-flex", alignItems:"center", gap:10, fontFamily:"Jost", fontSize:11, fontWeight:600, letterSpacing:"0.14em", color:"#1A1008", border:"1px solid #1A1008", borderRadius:6, padding:"12px 24px", textDecoration:"none" }}>
+            <IconInstagram size={16} /> FOLLOW ON INSTAGRAM
+          </a>
         </div>
       </div>
     </section>
@@ -1922,6 +1932,7 @@ function HomePage() {
       <TrendingSection />
       <Testimonials />
       <BestSellers />
+      <InstagramGallery />
       <Footer />
     </div>
   );
