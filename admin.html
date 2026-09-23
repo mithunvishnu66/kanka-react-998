@@ -486,9 +486,15 @@ async function loadOrders() {
         status: stage,
         shipping: Number(o.shipping_amount) || 0,
         items,
-        addr1: addr.line1 || addr.address || addr.street || "",
-        addr2: [addr.city, addr.state, addr.zip || addr.pincode].filter(Boolean).join(", "),
+        addr1: addr.line1 || addr.address || addr.address1 || addr.street || "",
+        addrApt: addr.line2 || addr.apt || addr.address2 || addr.apartment || "",
+        addrLandmark: addr.landmark || "",
+        addrCity: addr.city || "",
+        addrState: addr.state || "",
+        addrPin: addr.zip || addr.pincode || addr.postal_code || addr.pin || "",
+        addrCountry: addr.country === "IN" ? "India" : (addr.country || ""),
         phone: o.customer_phone || addr.phone || "",
+        email: o.customer_email || addr.email || "",
       };
     });
 
@@ -1292,7 +1298,12 @@ function renderPanel(o) {
       <div style="background:#FBF8F3;border:1px solid #EAE1D4;border-radius:12px;padding:18px 20px;margin-bottom:16px;">
         <p style="font-family:'Jost';font-size:10px;font-weight:600;letter-spacing:0.12em;color:#9A8978;margin-bottom:11px;">DELIVER TO</p>
         <p style="font-family:'Jost';font-size:14px;font-weight:600;color:#1A1008;margin-bottom:5px;">${esc(o.name)}</p>
-        <p style="font-family:'Jost';font-size:13px;color:#6B5744;line-height:1.7;">${esc(o.addr1)}<br/>${esc(o.addr2)}<br/>${esc(o.phone)}</p>
+        <div style="display:grid;grid-template-columns:auto 1fr;column-gap:14px;row-gap:6px;font-family:'Jost';font-size:13px;line-height:1.5;">
+          ${[["Address", o.addr1], ["Apt / Suite", o.addrApt], ["Landmark", o.addrLandmark], ["City", o.addrCity], ["State", o.addrState], ["PIN Code", o.addrPin], ["Country", o.addrCountry]]
+            .filter(([, v]) => v).map(([k, v]) => `<span style="color:#9A8978;">${k}</span><span style="color:#1A1008;">${esc(v)}</span>`).join("")}
+          ${o.phone ? `<span style="color:#9A8978;">Phone</span><a href="tel:${esc(o.phone)}" style="color:#1A1008;font-weight:600;text-decoration:none;">${esc(o.phone)}</a>` : ""}
+          ${o.email ? `<span style="color:#9A8978;">Email</span><a href="mailto:${esc(o.email)}" style="color:#1A1008;text-decoration:none;word-break:break-all;">${esc(o.email)}</a>` : ""}
+        </div>
       </div>
 
       <div style="background:#FBF8F3;border:1px solid #EAE1D4;border-radius:12px;padding:18px 20px;margin-bottom:16px;">
