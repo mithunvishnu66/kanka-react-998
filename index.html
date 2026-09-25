@@ -1646,9 +1646,6 @@ function Hero() {
             {s.sub}
           </p>
           <div style={{ display:"flex", gap:14, flexWrap:"wrap" }}>
-            <PrimaryBtn onClick={() => navigate("listing", { listFilter: s.filter })} light>
-              SHOP NOW <IconArrowRight size={16} />
-            </PrimaryBtn>
             <button onClick={() => navigate("listing", { listFilter:"all" })} style={{
               background:"transparent", border:"1.5px solid rgba(250,249,247,0.45)",
               color:"#FAF9F7", fontFamily:"Jost", fontSize:12, fontWeight:600,
