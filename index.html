@@ -2246,6 +2246,14 @@ const { Navbar, Footer, ProductCard, StarRating, SectionHeader, PrimaryBtn,
 function ImageGallery({ images }) {
   const [active,  setActive]  = useState(0);
   const [zoom,    setZoom]    = useState(false);
+  useEffect(() => {
+    if (!zoom) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = e => { if (e.key === "Escape") setZoom(false); };
+    window.addEventListener("keydown", onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener("keydown", onKey); };
+  }, [zoom]);
   const trackRef              = useRef(null);
   const startX                = useRef(null);
   const isDragging            = useRef(false);
@@ -2374,9 +2382,9 @@ function ImageGallery({ images }) {
       )}
 
       {/* Zoom lightbox */}
-      {zoom && (
+      {zoom && ReactDOM.createPortal(
         <div
-          style={{ position:"fixed", inset:0, zIndex:2000, background:"rgba(0,0,0,0.94)",
+          style={{ position:"fixed", inset:0, zIndex:99999, background:"rgba(0,0,0,0.94)",
             display:"flex", alignItems:"center", justifyContent:"center", cursor:"zoom-out",
             animation:"fadeIn 0.2s ease" }}
           onClick={() => setZoom(false)}
@@ -2388,7 +2396,8 @@ function ImageGallery({ images }) {
             width:40, height:40, color:"#FAF9F7", fontSize:22, cursor:"pointer",
             display:"flex", alignItems:"center", justifyContent:"center",
           }}>×</button>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
