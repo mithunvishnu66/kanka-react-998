@@ -308,6 +308,15 @@
     @media (max-width: 600px) {
       .product-name-mobile { font-size: 15px !important; }
       .product-price-mobile { font-size: 14px !important; }
+      /* Mobile: horizontal card — photo left, details right, one per row */
+      .kk-product-card { display: grid !important; grid-template-columns: 42% 1fr; align-items: center; width: 100%; transform: none !important; }
+      .kk-product-card .img-3-4 { aspect-ratio: 3 / 4; height: auto; padding-bottom: 0 !important; }
+      .kk-product-card .kk-card-info { padding: 14px 16px !important; }
+      .kk-product-card .kk-card-info h3 { font-size: 19px !important; }
+      .kk-product-card .kk-card-add { display: none !important; }
+      .kk-product-card .kk-card-wish { opacity: 1 !important; width: 30px !important; height: 30px !important; top: 8px !important; right: 8px !important; }
+      *:has(> .kk-product-card) { grid-template-columns: 1fr !important; gap: 14px !important; }
+      .kk-card-more { display: inline-flex !important; }
     }
 
     /* Product detail mobile improvements */
@@ -1021,6 +1030,7 @@ function ProductCard({ product }) {
 
   return (
     <div
+      className="kk-product-card"
       onClick={() => navigate("detail", { productId: product.id })}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -1053,6 +1063,7 @@ function ProductCard({ product }) {
 
         {/* Wishlist */}
         <button
+          className="kk-card-wish"
           onClick={(e) => {e.stopPropagation();setWished((w) => !w);}}
           style={{
             position: "absolute", top: 10, right: 10,
@@ -1069,6 +1080,7 @@ function ProductCard({ product }) {
 
         {/* Add to bag overlay */}
         <button
+          className="kk-card-add"
           onClick={handleAdd}
           style={{
             position: "absolute", bottom: 0, left: 0, right: 0,
@@ -1087,7 +1099,7 @@ function ProductCard({ product }) {
       </div>
 
       {/* Info */}
-      <div style={{ padding: "14px 16px 18px" }}>
+      <div className="kk-card-info" style={{ padding: "14px 16px 18px" }}>
         <p style={{ fontFamily: "Jost", fontSize: 11, color: "#B8A99A", letterSpacing: "0.08em", marginBottom: 4 }}>
           {product.category.toUpperCase()}
         </p>
@@ -1110,6 +1122,7 @@ function ProductCard({ product }) {
           }} />
           )}
         </div>
+        <span className="kk-card-more" style={{ display: "none", marginTop: 14, fontFamily: "Jost", fontSize: 11, fontWeight: 600, letterSpacing: "0.14em", color: "#1A1008", borderBottom: "1px solid #1A1008", paddingBottom: 2 }}>VIEW PRODUCT</span>
       </div>
     </div>);
 
