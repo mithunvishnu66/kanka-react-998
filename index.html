@@ -1011,7 +1011,7 @@ function StarRating({ rating, size = 14, showCount, count }) {
 }
 
 /* ─── ProductCard ───────────────────────────────────────────────── */
-function ProductCard({ product }) {
+function ProductCard({ product, horizontal }) {
   const { addToCart } = useCart();
   const { navigate } = useApp();
   const [hovered, setHovered] = useState(false);
@@ -1030,7 +1030,7 @@ function ProductCard({ product }) {
 
   return (
     <div
-      className="kk-product-card"
+      className={horizontal ? "kk-product-card" : undefined}
       onClick={() => navigate("detail", { productId: product.id })}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -2196,7 +2196,7 @@ function ListingPage() {
               </div>
             ) : (
               <div className="grid-3" style={{ display:"grid", gap:20 }}>
-                {filtered.map(p => <ProductCard key={p.id} product={p} />)}
+                {filtered.map(p => <ProductCard key={p.id} product={p} horizontal />)}
               </div>
             )}
           </div>
@@ -2694,7 +2694,7 @@ function RelatedProducts({ currentId }) {
       <div className="container">
         <SectionHeader label="YOU MAY ALSO LIKE" title="Complete the Look" center={false} />
         <div className="grid-4">
-          {related.map(p => <ProductCard key={p.id} product={p} />)}
+          {related.map(p => <ProductCard key={p.id} product={p} horizontal />)}
         </div>
       </div>
     </section>
