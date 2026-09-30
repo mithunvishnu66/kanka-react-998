@@ -1175,6 +1175,69 @@ window.kkSuggest = function kkSuggest(q, limit) {
   return scored.slice(0, limit || 6).map(s => s.p);
 };
 
+/* ─── Nav hover popup ─── */
+function NavHoverMenu({ link, color }) {
+  const { navigate } = useApp();
+  const [open, setOpen] = useState(false);
+  const t = useRef(null);
+  const show = () => { clearTimeout(t.current); setOpen(true); };
+  const hide = () => { clearTimeout(t.current); t.current = setTimeout(() => setOpen(false), 140); };
+  const go = (params) => { setOpen(false); navigate("listing", params); };
+  const cols = window.COLLECTIONS || [];
+  const col = cols.find(c => c.filter === link.filter);
+  const items = (window.PRODUCTS || []).filter(p => link.filter === "all" || p.category === link.filter).slice(0, 3);
+  const rupee = n => "₹" + (n || 0).toLocaleString("en-IN");
+  const label = { fontFamily:"Jost", fontSize:10.5, fontWeight:600, letterSpacing:"0.16em", color:"#8C7B6E", textTransform:"uppercase" };
+  const viewAll = { display:"inline-flex", alignItems:"center", gap:8, marginTop:14, background:"none", border:"none", borderBottom:"1px solid #1A1008", padding:"0 0 2px", cursor:"pointer", fontFamily:"Jost", fontSize:11, fontWeight:600, letterSpacing:"0.14em", color:"#1A1008", minHeight:0 };
+  return (
+    <div onMouseEnter={show} onMouseLeave={hide} style={{ position:"relative" }}>
+      <NavLink label={link.label} color={color} onClick={() => go({ listFilter: link.filter })} />
+      {open &&
+      <div style={{ position:"absolute", top:"100%", left:"50%", transform:"translateX(-50%)", paddingTop:22, zIndex:950 }}>
+        <div style={{ background:"#FAF7EE", border:"1px solid rgba(26,16,8,0.1)", borderRadius:14, boxShadow:"0 22px 50px -18px rgba(10,6,2,0.45)", padding:18, width: link.filter === "all" ? 480 : 420, animation:"kkSearchOpen 0.22s cubic-bezier(0.22,1,0.36,1) both", transformOrigin:"top center" }}>
+          {link.filter === "all" ?
+          <div>
+            <p style={label}>Collections</p>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:12, marginTop:12 }}>
+              {cols.map(c =>
+              <button key={c.id} onClick={() => go({ listFilter: c.filter })} style={{ background:"none", border:"none", padding:0, cursor:"pointer", textAlign:"left", minHeight:0 }}>
+                <div style={{ aspectRatio:"3/4", borderRadius:8, overflow:"hidden", background:"#EDE5D8" }}>
+                  <img src={c.image} alt="" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
+                </div>
+                <span style={{ display:"block", marginTop:8, fontFamily:"'Cormorant Garamond', serif", fontSize:17, color:"#1A1008" }}>{c.title}</span>
+              </button>
+              )}
+            </div>
+            <button onClick={() => go({ listFilter: "all" })} style={viewAll}>VIEW ALL PRODUCTS <IconArrowRight size={13} /></button>
+          </div> :
+          <div style={{ display:"grid", gridTemplateColumns:"130px 1fr", gap:18 }}>
+            <button onClick={() => go({ listFilter: link.filter })} style={{ background:"none", border:"none", padding:0, cursor:"pointer", minHeight:0, aspectRatio:"3/4", borderRadius:8, overflow:"hidden", background:"#EDE5D8" }}>
+              {col && <img src={col.image} alt="" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />}
+            </button>
+            <div style={{ display:"flex", flexDirection:"column", minWidth:0 }}>
+              <p style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:22, color:"#1A1008", lineHeight:1.1 }}>{col ? col.title : link.label}</p>
+              {col && <p style={{ fontFamily:"Jost", fontSize:12, color:"#8C7B6E", marginTop:4 }}>{col.subtitle}</p>}
+              <div style={{ display:"flex", flexDirection:"column", gap:8, marginTop:14 }}>
+                {items.length > 0 ? items.map(p =>
+                <button key={p.id} onClick={() => { setOpen(false); navigate("detail", { productId: p.id }); }} style={{ display:"flex", alignItems:"center", gap:10, background:"none", border:"none", padding:0, cursor:"pointer", textAlign:"left", minHeight:0 }}>
+                  <img src={(p.images || [])[0]} alt="" style={{ width:36, height:44, objectFit:"cover", borderRadius:5, background:"#EDE5D8", flexShrink:0 }} />
+                  <span style={{ flex:1, minWidth:0, fontFamily:"Jost", fontSize:13, color:"#1A1008", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{p.name}</span>
+                  <span style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:15, color:"#1A1008" }}>{rupee(p.price)}</span>
+                </button>
+                ) :
+                <p style={{ fontFamily:"Jost", fontSize:12.5, color:"#8C7B6E" }}>New pieces arriving soon.</p>}
+              </div>
+              <div style={{ marginTop:"auto" }}>
+                <button onClick={() => go({ listFilter: link.filter })} style={viewAll}>VIEW ALL <IconArrowRight size={13} /></button>
+              </div>
+            </div>
+          </div>}
+        </div>
+      </div>}
+    </div>
+  );
+}
+
 /* ─── Navbar ────────────────────────────────────────────────────── */
 function Navbar({ transparent = false, noSearch = false, overlay = false }) {
   const { cartCount } = useCart();
@@ -1392,9 +1455,10 @@ function NavLink({ label, color, onClick }) {
     style={{
       background: "none", border: "none", cursor: "pointer",
       fontFamily: "Jost", fontSize: 11, fontWeight: 500, letterSpacing: "0.13em",
-      color, padding: "4px 0",
+      color, padding: "4px 0", display: "inline-block",
       borderBottom: hov ? `1px solid ${color}` : "1px solid transparent",
-      transition: "color 0.3s, border-color 0.2s"
+      transform: hov ? "translateY(-2px)" : "none",
+      transition: "transform 0.2s ease, border-color 0.2s"
     }}>
       {label}</button>);
 
